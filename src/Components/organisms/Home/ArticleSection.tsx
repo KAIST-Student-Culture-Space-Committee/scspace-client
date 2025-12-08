@@ -1,0 +1,63 @@
+"use client"
+
+import { Box, Heading, SimpleGrid, Stack, Text, useBreakpointValue } from "@chakra-ui/react";
+import ArticleCard from "@scspace-client/Components/molecules/home/ArticleCard";
+import { useArticleAPI } from "@scspace-client/Hooks/article";
+
+const previewCards = [
+    {
+        title: "캠퍼스 공간 이야기",
+        description: "공간을 운영하는 학생들의 생생한 경험과 운영 팁을 모아 소개합니다.",
+        status: "12월 공개 예정",
+        palette: "blue" as const,
+    },
+    {
+        title: "예약 꿀팁 모음",
+        description: "희망 시간대를 잡기 위한 전략부터 준비물 체크리스트까지 한 번에 정리합니다.",
+        status: "1월 공개 예정",
+        palette: "teal" as const,
+    },
+    {
+        title: "공간 사진 미리보기",
+        description: "실제 이용 사진과 함께 각 공간의 분위기와 활용 사례를 미리 확인해 보세요.",
+        status: "곧 업데이트",
+        palette: "purple" as const,
+    },
+];
+
+export default function ArticleSection() {
+    const columns = useBreakpointValue({ base: 1, xl: 3 }) ?? 1;
+
+    const { data } = useArticleAPI().articlePreviews;
+
+    return (
+        <Box
+            as="section"
+            color="gray.900"
+            py={{ base: 16, md: 24 }}
+            px={{ base: 6, md: 20 }}
+            bgGradient="to-b"
+            gradientFrom={"#f8fbff"}
+            gradientTo={"#ffffff"}
+        >
+            <Stack maxW="7xl" mx="auto" align="flex-start" gap={{ base: 10, md: 14 }}>
+                <Stack gap={4}>
+                    <Heading fontSize={{ base: "2xl", md: "4xl" }}>
+                        게시판
+                    </Heading>
+                    <Text fontSize={{ base: "md", md: "lg" }} color="gray.600">
+                        공간위와 관련된 다양한 소식과 유용한 정보를 확인해 보세요. 공지, 행사, 그리고 홍보 3개의 게시판이 준비되어 있습니다.
+                    </Text>
+                </Stack>
+
+                {(data) && (
+                    <SimpleGrid columns={columns} gap={{ base: 4, md: 6 }} width="100%">
+                        {Object.values(data).map((article, index) => (
+                            <ArticleCard key={article.id} {...article} index={index} />
+                        ))}
+                    </SimpleGrid>
+                )}
+            </Stack>
+        </Box>
+    );
+}

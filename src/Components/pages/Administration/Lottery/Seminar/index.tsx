@@ -1,0 +1,31 @@
+import { Tabs } from "@chakra-ui/react";
+import Scroll from "@scspace-client/Components/molecules/page/Scroll";
+import SeminarLotteryAdmin from "@scspace-client/Components/organisms/Lottery/Seminar/SeminarLotteryAdmin";
+import SeminarLotteryInfo from "@scspace-client/Components/organisms/Lottery/Seminar/SeminarLotteryInfo";
+import React from "react";
+
+export default function ManageSeminarLottery() {
+    const tabList: { [key: string]: React.ReactNode } = {
+        "세미나실 정기예약 추첨 날짜": <SeminarLotteryInfo />,
+        "세미나실 정기예약 추첨 결과 변경": <SeminarLotteryAdmin />,
+    };
+
+    return (
+        <Scroll>
+            <Tabs.Root defaultValue={Object.keys(tabList)[0]} fitted minHeight={"full"}>
+                <Tabs.List>
+                    {Object.keys(tabList).map((key) => (
+                        <Tabs.Trigger key={key} value={key}>
+                            {key}
+                        </Tabs.Trigger>
+                    ))}
+                </Tabs.List>
+                {Object.entries(tabList).map(([key, content]) => (
+                    <Tabs.Content key={key} value={key} minHeight={"full"}>
+                        {content}
+                    </Tabs.Content>
+                ))}
+            </Tabs.Root>
+        </Scroll>
+    );
+}

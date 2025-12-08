@@ -1,0 +1,33 @@
+.datepicker {
+  width: 100%
+}
+
+:focus {
+  outline: none;
+}
+
+.react-datepicker {
+  z-index: 9999 !important;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-y: hidden; /* 가로 스크롤 강제 제거 */
+}
+
+.chakra-dialog__positioner {
+  max-height: 100svh !important;
+}
+
+.full {
+  min-height: 100svh !important;
+}
+
+.chakra-blockquote__root {
+  width: var(--chakra-sizes-full) !important;
+}
+
+.chakra-blockquote__content {
+  width: var(--chakra-sizes-full) !important;
+}
