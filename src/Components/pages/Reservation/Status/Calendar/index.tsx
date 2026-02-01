@@ -13,7 +13,6 @@ import {
 import Scroll from "../../../../molecules/page/Scroll";
 import { useEffect, useState } from "react";
 import LoadingComponent from "../../../../atoms/Loading";
-import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from "react-datepicker";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import { CalendarView } from "../../../../organisms/Reservation/Calendar";

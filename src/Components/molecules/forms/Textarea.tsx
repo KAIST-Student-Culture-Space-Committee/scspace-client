@@ -1,5 +1,4 @@
-import { Textarea, } from "@chakra-ui/react";
-import "react-datepicker/dist/react-datepicker.css";
+import { Textarea } from "@chakra-ui/react";
 import FieldComponent from "../../atoms/Field";
 
 export default function TextareaComponent({

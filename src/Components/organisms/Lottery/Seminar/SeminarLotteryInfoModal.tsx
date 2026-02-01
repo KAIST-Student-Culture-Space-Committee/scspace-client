@@ -9,7 +9,6 @@ import { dateUtils } from "@scspace-client/Hooks/utils";
 import { ILotteryInfo } from "@scspace-depot/types/lottery/lottery.info.type";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
 
 export default function SeminarLotteryInfoModal({ info, open, setOpen, refetch }: {
     info: ILotteryInfo | null;
