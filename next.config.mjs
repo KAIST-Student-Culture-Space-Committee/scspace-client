@@ -2,7 +2,7 @@
 
 const nextConfig = {
   // Turbopack 안정화 버전 사용
-  turbopack: {},
+  // turbopack: {},
 
   // 개발 서버 안정성을 위한 기본 설정
   reactStrictMode: true,
