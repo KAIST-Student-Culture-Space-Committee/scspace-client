@@ -3,7 +3,7 @@ import "../../static/css/main.css";
 import Header from "@scspace-client/Components/organisms/Header";
 import { ReactNode } from "react";
 import Providers from "./providers";
-import { Box, Grid, } from "@chakra-ui/react";
+import { Grid, } from "@chakra-ui/react";
 import ToasterComponent from "@scspace-client/Components/atoms/Toaster";
 import LayoutBox from "./padding";
 
