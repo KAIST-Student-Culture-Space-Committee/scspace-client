@@ -1,4 +1,3 @@
-import "react-datepicker/dist/react-datepicker.css";
 import "./globals.css";
 import "../../static/css/main.css";
 import Header from "@scspace-client/Components/organisms/Header";
