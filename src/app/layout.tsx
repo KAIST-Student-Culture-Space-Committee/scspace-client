@@ -1,4 +1,3 @@
-import "react-datepicker/dist/react-datepicker.css";
 import "./globals.css";
 import "../../static/css/main.css";
 import Header from "@scspace-client/Components/organisms/Header";
@@ -23,6 +22,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
       <head>
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/react-datepicker@8.4.0/dist/react-datepicker.min.css"
+        />
         <link rel="shortcut icon" href="/img/logo.svg" />
         <link
           rel="preconnect"
