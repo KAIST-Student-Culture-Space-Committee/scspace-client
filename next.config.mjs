@@ -7,6 +7,9 @@ const nextConfig = {
   // 개발 서버 안정성을 위한 기본 설정
   reactStrictMode: true,
 
+  // node_modules 패키지의 CSS를 처리하기 위한 설정
+  transpilePackages: ["react-datepicker"],
+
   // 성능 최적화 (안전한 수준)
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
