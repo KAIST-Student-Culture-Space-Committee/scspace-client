@@ -3,16 +3,32 @@
 import { Box, Button, Card, Center, CloseButton, Dialog, DialogPositioner, HStack, Mark, Portal, Separator, Stack, StackSeparator, Tabs, Text, useBreakpointValue } from "@chakra-ui/react";
 import Scroll from "../../molecules/page/Scroll";
 import PrivacyPolicy from "../../organisms/Login/PrivacyPolicy";
-import { useLinkPush } from "@scspace-client/Hooks/api";
 import { useState } from "react";
 import Image from "next/image";
 import TooltipComponent from "../../atoms/Tooptip";
 
+const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+
 export default function SSOLogin() {
     const isWide = useBreakpointValue({ base: false, md: true });
-    const { linkPush } = useLinkPush();
 
     const [read, setRead] = useState<boolean>(false);
+
+    const handleLogin = async () => {
+        try {
+            const res = await fetch(`${baseUrl}/auth/login-url`, {
+                credentials: "include",
+            });
+            if (!res.ok) {
+                throw new Error('Failed to get login URL');
+            }
+            const { loginUrl } = await res.json();
+            window.location.href = loginUrl;
+        } catch (error) {
+            console.error("Login failed:", error);
+            // Optionally, show an error message to the user
+        }
+    };
 
     return (
         <Dialog.Root size={"full"} scrollBehavior="inside">
@@ -64,7 +80,7 @@ export default function SSOLogin() {
                                                 </Text>
                                             )}
                                         >
-                                            <Button bg={{ base: "#01438F", _disabled: "fg.error" }} fontWeight={{ base: "semibold", _hover: "bold" }} onClick={() => linkPush("/login/sso")} disabled={!read}>
+                                            <Button bg={{ base: "#01438F", _disabled: "fg.error" }} fontWeight={{ base: "semibold", _hover: "bold" }} onClick={handleLogin} disabled={!read}>
                                                 Login as a KAIST SSO
                                             </Button>
                                         </TooltipComponent>
