@@ -4,10 +4,12 @@ import { Tabs, useTabs } from "@chakra-ui/react";
 import Scroll from "@scspace-client/Components/molecules/page/Scroll";
 import GoodsList from "@scspace-client/Components/organisms/Rental/GoodsList";
 import RentalHistoryManager from "@scspace-client/Components/organisms/Rental/RentalList/RentalHistoryManager";
+import RentalWizard from "@scspace-client/Components/organisms/Rental/AdminTools/RentalWizard";
 import React from "react";
 
 export default function ManageRental() {
     const tabList: { [key: string]: React.ReactNode } = {
+        "Create Rental": <RentalWizard />,
         History: <RentalHistoryManager />,
         "Manage Goods": <GoodsList manage />,
     };

@@ -1,0 +1,403 @@
+"use client";
+
+import { useState } from "react";
+import {
+    Box,
+    Button,
+    VStack,
+    HStack,
+    Text,
+    Input,
+    Textarea,
+    Steps,
+    Card,
+    Separator,
+    DataList,
+    Stack,
+} from "@chakra-ui/react";
+import DataListItem from "@scspace-client/Components/atoms/DataListItem";
+import FieldComponent from "@scspace-client/Components/atoms/Field";
+import StudentSearch from "./StudentSearch";
+import { IUser } from "@scspace-depot/types/user";
+import { IGoods, IRentalCreateAdmin } from "@scspace-depot/types/rental";
+import { useGoodsAPI } from "@scspace-client/Hooks/rental";
+import { useMutationApi } from "@scspace-client/Hooks/api";
+import LoadingComponent from "@scspace-client/Components/atoms/Loading";
+
+interface RentalFormData {
+    user: IUser | null;
+    goods: IGoods | null;
+    count: number;
+    groupName: string;
+    contact: string;
+    emergencyContact: string;
+    usingLocation: string;
+    usingPurpose: string;
+}
+
+export default function RentalWizard() {
+    const [step, setStep] = useState(0);
+    const [formData, setFormData] = useState<RentalFormData>({
+        user: null,
+        goods: null,
+        count: 1,
+        groupName: "",
+        contact: "",
+        emergencyContact: "",
+        usingLocation: "",
+        usingPurpose: "",
+    });
+
+    const { allGoods } = useGoodsAPI();
+    const goodsList = allGoods.data || [];
+
+    const createRentalMutation = useMutationApi<
+        { success: boolean; data: { id: number } },
+        IRentalCreateAdmin
+    >("/rental/admin", "POST");
+
+    const countIsValid = Boolean(
+        formData.goods &&
+        Number.isInteger(formData.count) &&
+        formData.count >= 1 &&
+        formData.count <= formData.goods.countNow,
+    );
+
+    const handleUserSelect = (user: IUser) => {
+        setFormData((prev) => ({ ...prev, user }));
+        setStep(1);
+    };
+
+    const handleGoodsSelect = (goods: IGoods) => {
+        setFormData((prev) => ({ ...prev, goods, count: 1 }));
+        setStep(2);
+    };
+
+    const handleDetailsSubmit = () => {
+        if (!countIsValid) {
+            return;
+        }
+        setStep(3);
+    };
+
+    const handleFinalSubmit = async () => {
+        if (!formData.user || !formData.goods || !countIsValid) return;
+
+        try {
+            const payload: IRentalCreateAdmin = {
+                userId: formData.user.id,
+                goodsId: formData.goods.id,
+                count: formData.count,
+                groupName: formData.groupName || "",
+                contact: formData.contact || "",
+                emergencyContact: formData.emergencyContact || "",
+                usingLocation: formData.usingLocation || "",
+                usingPurpose: formData.usingPurpose || "",
+            };
+
+            await createRentalMutation.mutateAsync(payload);
+
+            setFormData({
+                user: null,
+                goods: null,
+                count: 1,
+                groupName: "",
+                contact: "",
+                emergencyContact: "",
+                usingLocation: "",
+                usingPurpose: "",
+            });
+            setStep(0);
+
+            alert("Rental created successfully!");
+        } catch (error) {
+            console.error(error);
+            alert(`Error creating rental: ${error instanceof Error ? error.message : "Unknown error"}`);
+        }
+    };
+
+    const steps = [
+        { title: "Select Student" },
+        { title: "Select Goods" },
+        { title: "Enter Details" },
+        { title: "Review & Submit" },
+    ];
+
+    return (
+        <VStack align="stretch" gap={6} p={4}>
+            <Steps.Root
+                count={steps.length}
+                step={step}
+                size="sm"
+                colorPalette="blue"
+            >
+                {steps.map((s, index) => (
+                    <Steps.Item key={index} index={index} title={s.title} />
+                ))}
+            </Steps.Root>
+
+            <Card.Root>
+                <Card.Body>
+                    {step === 0 && (
+                        <VStack align="stretch" gap={4}>
+                            <Text fontSize="xl" fontWeight="bold">
+                                Step 1: Select Student
+                            </Text>
+                            <StudentSearch onSelect={handleUserSelect} />
+                        </VStack>
+                    )}
+
+                    {step === 1 && (
+                        <VStack align="stretch" gap={4}>
+                            <Text fontSize="xl" fontWeight="bold">
+                                Step 2: Select Goods
+                            </Text>
+                            {formData.user && (
+                                <Box p={3} bg="gray.50" borderRadius="md">
+                                    <Text fontSize="sm" fontWeight="bold">
+                                        Selected Student:
+                                    </Text>
+                                    <Text>
+                                        {formData.user.nameKr} ({formData.user.studentNumber})
+                                    </Text>
+                                </Box>
+                            )}
+                            {!goodsList.length ? (
+                                <LoadingComponent />
+                            ) : (
+                                <Stack gap={2}>
+                                    {goodsList.map((goods) => {
+                                        const canSelect = goods.countNow > 0;
+                                        return (
+                                            <Card.Root
+                                                key={goods.id}
+                                                variant="outline"
+                                                cursor={canSelect ? "pointer" : "not-allowed"}
+                                                onClick={() => canSelect && handleGoodsSelect(goods)}
+                                                _hover={canSelect ? { bg: "gray.50" } : undefined}
+                                                opacity={canSelect ? 1 : 0.6}
+                                            >
+                                                <Card.Body>
+                                                    <HStack justify="space-between">
+                                                        <VStack align="start" gap={1}>
+                                                            <Text fontWeight="bold">{goods.name}</Text>
+                                                            <Text fontSize="sm" color="gray.600">
+                                                                {goods.description}
+                                                            </Text>
+                                                            <Text fontSize="sm" color="gray.500">
+                                                                Available: {goods.countNow} / {goods.countAll}
+                                                            </Text>
+                                                        </VStack>
+                                                        <Button
+                                                            size="sm"
+                                                            colorPalette="blue"
+                                                            disabled={!canSelect}
+                                                        >
+                                                            {canSelect ? "Select" : "Out of stock"}
+                                                        </Button>
+                                                    </HStack>
+                                                </Card.Body>
+                                            </Card.Root>
+                                        );
+                                    })}
+                                </Stack>
+                            )}
+                            <HStack justify="space-between">
+                                <Button onClick={() => setStep(0)} variant="outline">
+                                    Back
+                                </Button>
+                            </HStack>
+                        </VStack>
+                    )}
+
+                    {step === 2 && (
+                        <VStack align="stretch" gap={4}>
+                            <Text fontSize="xl" fontWeight="bold">
+                                Step 3: Enter Details
+                            </Text>
+                            {formData.goods && (
+                                <Box p={3} bg="gray.50" borderRadius="md">
+                                    <Text fontSize="sm" fontWeight="bold">
+                                        Selected Goods:
+                                    </Text>
+                                    <Text>{formData.goods.name}</Text>
+                                </Box>
+                            )}
+                            <FieldComponent
+                                options={{
+                                    label: "Quantity",
+                                    required: true,
+                                }}
+                            >
+                                <Input
+                                    type="number"
+                                    min={1}
+                                    max={formData.goods?.countNow || 1}
+                                    value={formData.count}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            count: parseInt(e.target.value) || 1,
+                                        }))
+                                    }
+                                />
+                            </FieldComponent>
+                            {!countIsValid && (
+                                <Text color="red.500" fontSize="sm">
+                                    Quantity must be between 1 and available stock.
+                                </Text>
+                            )}
+                            <FieldComponent
+                                options={{
+                                    label: "Group Name",
+                                }}
+                            >
+                                <Input
+                                    value={formData.groupName}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            groupName: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Organization or group name"
+                                />
+                            </FieldComponent>
+                            <FieldComponent
+                                options={{
+                                    label: "Contact",
+                                }}
+                            >
+                                <Input
+                                    value={formData.contact}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            contact: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Phone number or email"
+                                />
+                            </FieldComponent>
+                            <FieldComponent
+                                options={{
+                                    label: "Emergency Contact",
+                                }}
+                            >
+                                <Input
+                                    value={formData.emergencyContact}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            emergencyContact: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Emergency contact number"
+                                />
+                            </FieldComponent>
+                            <FieldComponent
+                                options={{
+                                    label: "Using Location",
+                                }}
+                            >
+                                <Input
+                                    value={formData.usingLocation}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            usingLocation: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Where will the goods be used?"
+                                />
+                            </FieldComponent>
+                            <FieldComponent
+                                options={{
+                                    label: "Using Purpose",
+                                }}
+                            >
+                                <Textarea
+                                    value={formData.usingPurpose}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            usingPurpose: e.target.value,
+                                        }))
+                                    }
+                                    placeholder="Purpose of rental"
+                                    rows={3}
+                                />
+                            </FieldComponent>
+                            <HStack justify="space-between">
+                                <Button onClick={() => setStep(1)} variant="outline">
+                                    Back
+                                </Button>
+                                <Button
+                                    onClick={handleDetailsSubmit}
+                                    colorPalette="blue"
+                                    disabled={!countIsValid}
+                                >
+                                    Next
+                                </Button>
+                            </HStack>
+                        </VStack>
+                    )}
+
+                    {step === 3 && (
+                        <VStack align="stretch" gap={4}>
+                            <Text fontSize="xl" fontWeight="bold">
+                                Step 4: Review & Submit
+                            </Text>
+                            <DataList.Root>
+                                <DataListItem label="Student">
+                                    {formData.user
+                                        ? `${formData.user.nameKr} (${formData.user.studentNumber})`
+                                        : "N/A"}
+                                </DataListItem>
+                                <DataListItem label="Email">
+                                    {formData.user?.email || "N/A"}
+                                </DataListItem>
+                                <Separator />
+                                <DataListItem label="Goods">
+                                    {formData.goods?.name || "N/A"}
+                                </DataListItem>
+                                <DataListItem label="Quantity">
+                                    {formData.count}
+                                </DataListItem>
+                                <Separator />
+                                <DataListItem label="Group Name">
+                                    {formData.groupName || "N/A"}
+                                </DataListItem>
+                                <DataListItem label="Contact">
+                                    {formData.contact || "N/A"}
+                                </DataListItem>
+                                <DataListItem label="Emergency Contact">
+                                    {formData.emergencyContact || "N/A"}
+                                </DataListItem>
+                                <DataListItem label="Using Location">
+                                    {formData.usingLocation || "N/A"}
+                                </DataListItem>
+                                <DataListItem label="Using Purpose">
+                                    {formData.usingPurpose || "N/A"}
+                                </DataListItem>
+                            </DataList.Root>
+                            <HStack justify="space-between">
+                                <Button onClick={() => setStep(2)} variant="outline">
+                                    Back
+                                </Button>
+                                <Button
+                                    onClick={handleFinalSubmit}
+                                    colorPalette="green"
+                                    loading={createRentalMutation.isPending}
+                                    disabled={!formData.user || !formData.goods || !countIsValid}
+                                >
+                                    Submit Rental
+                                </Button>
+                            </HStack>
+                        </VStack>
+                    )}
+                </Card.Body>
+            </Card.Root>
+        </VStack>
+    );
+}

@@ -20,6 +20,7 @@ import { dateUtils } from "@scspace-client/Hooks/utils";
 import DataListItem from "@scspace-client/Components/atoms/DataListItem";
 import SimpleDialog from "@scspace-client/Components/atoms/SimpleDialog";
 import { IRentalAll } from "@scspace-depot/types/rental";
+import { RentalStatusEnum } from "@scspace-depot/enums/rental.enum";
 import ReturnBtn from "./ReturnBtn";
 import ConfirmBtn from "./ConfirmBtn";
 import Link from "next/link";
@@ -36,6 +37,12 @@ export default function RentalDialog({ open, setOpen, rental, refetchList }: {
     const { getString } = dateUtils();
 
     const isWide = useBreakpointValue({ base: false, md: true });
+    const statusLabel: Record<RentalStatusEnum, string> = {
+        [RentalStatusEnum.ACTIVE]: "Active",
+        [RentalStatusEnum.RETURNED]: "Returned",
+        [RentalStatusEnum.COMPLETED]: "Completed",
+        [RentalStatusEnum.CANCELLED]: "Cancelled",
+    };
 
     return (
         <SimpleDialog
@@ -105,6 +112,9 @@ export default function RentalDialog({ open, setOpen, rental, refetchList }: {
                                     </DataListItem>
                                     <DataListItem label="Confirmed At">
                                         {rental.timeConfirm === 0 ? (<Badge>Not Confirmed</Badge>) : getString(rental.timeConfirm)}
+                                    </DataListItem>
+                                    <DataListItem label="Status">
+                                        {statusLabel[rental.status] ?? "Unknown"}
                                     </DataListItem>
                                 </DataList.Root>
                             </DataListItem>
