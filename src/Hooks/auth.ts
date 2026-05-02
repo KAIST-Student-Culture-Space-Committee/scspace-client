@@ -7,10 +7,13 @@ import { UserUtils } from "@scspace-depot/utils/user.utils";
 
 export const useAuth = () => {
   const { data, isLoading, refetch } = useQueryApi<IVerificationResponse>("/auth/verify");
-
+  //console.log("useAuth data =", data);
+  
   const userInfo: IUser | null = data?.isLogined ? data.userInfo : null;
   const isLogined = !!userInfo;
   const { linkPush } = useLinkPush();
+
+  //console.log("userInfo =", userInfo);
 
   const isAdmin = isLogined && UserUtils.isAdmin(userInfo.type);
   const isManager = isLogined && UserUtils.isManager(userInfo.type);
@@ -90,12 +93,17 @@ export const useAuth = () => {
 export function useAuthAPI() {
   const { linkPush } = useLinkPush();
 
+  const baseURL = process.env.NEXT_PUBLIC_API_URL ?? "";
+
+
   function logout(refetch: () => void) {
-    fetch("/api/auth/logout", {
-      method: "GET"
+    console.log("Logging out...");
+    fetch(`${baseURL}/auth/logout`, {
+      method: "POST",
+      credentials: "include",
     }).then(() => {
-      linkPush('/');
-      refetch();
+      window.location.href = "/";
+      
     });
   }
 
