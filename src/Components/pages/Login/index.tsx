@@ -56,7 +56,6 @@ export default function SSOLogin() {
         }
 
         try {
-            console.log("Accepting privacy consent with token:", consentToken);
             const res = await fetch(`${baseUrl}/auth/accept-privacy-consent`, {
                 method: "POST",
                 headers: {
