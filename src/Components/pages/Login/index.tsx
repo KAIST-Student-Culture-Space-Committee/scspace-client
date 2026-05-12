@@ -6,13 +6,32 @@ import PrivacyPolicy from "../../organisms/Login/PrivacyPolicy";
 import { useState } from "react";
 import Image from "next/image";
 import TooltipComponent from "../../atoms/Tooptip";
+import { useSearchParams,useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 export default function SSOLogin() {
+
+    const searchParams = useSearchParams();
+    const router = useRouter();
+
+    const [privacyConsentOpen, setPrivacyConsentOpen] = useState(false);
+    const [consentToken, setConsentToken] = useState<string | null>(null);
+
     const isWide = useBreakpointValue({ base: false, md: true });
 
-    const [read, setRead] = useState<boolean>(false);
+    useEffect(() => {
+
+        const privacyConsentRequired = searchParams.get('privacyConsentRequired');
+        const token = searchParams.get('token');
+
+        if (privacyConsentRequired === 'true' && token) {
+            setConsentToken(token);
+            setPrivacyConsentOpen(true);
+            router.replace('/login');
+        }
+    }, [searchParams,router]);
 
     const handleLogin = async () => {
         try {
@@ -30,12 +49,41 @@ export default function SSOLogin() {
         }
     };
 
+    const handleAcceptPrivacyConsent = async () => {
+        if (!consentToken) {
+            console.error("Consent token is missing");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${baseUrl}/auth/accept-privacy-consent`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ consentToken }),
+                credentials: "include",
+            });
+            
+            if (!res.ok) {
+                throw new Error('Failed to accept privacy consent');
+            }
+
+            setPrivacyConsentOpen(false);
+            setConsentToken(null);
+            router.replace('/'); 
+        } catch (error) {
+            console.error("Failed to accept privacy consent:", error);
+            // Optionally, show an error message to the user
+        }
+    }
+
     return (
-        <Dialog.Root size={"full"} scrollBehavior="inside">
+        <Dialog.Root size={"full"} scrollBehavior="inside" open={privacyConsentOpen} onOpenChange={(details) => { setPrivacyConsentOpen(details.open) }}>
             <Portal>
                 <Tabs.Root defaultValue="Eng">
                     <Dialog.Positioner>
-                        <PrivacyPolicy onRead={() => setRead(true)} />
+                        <PrivacyPolicy onRead={handleAcceptPrivacyConsent} />
                     </Dialog.Positioner>
                 </Tabs.Root>
             </Portal>
@@ -72,39 +120,19 @@ export default function SSOLogin() {
                                         <TooltipComponent
                                             content={(
                                                 <Text>
-                                                    {read ? (
+                                                    {
                                                         "Click to login with KAIST SSO"
-                                                    ) : (
-                                                        "Please read Privacy Policy before login with KAIST SSO"
-                                                    )}
+                                                    }
                                                 </Text>
                                             )}
                                         >
-                                            <Button bg={{ base: "#01438F", _disabled: "fg.error" }} fontWeight={{ base: "semibold", _hover: "bold" }} onClick={handleLogin} disabled={!read}>
+                                            <Button bg={{ base: "#01438F", _disabled: "fg.error" }} fontWeight={{ base: "semibold", _hover: "bold" }} onClick={handleLogin} >
                                                 Login as a KAIST SSO
                                             </Button>
                                         </TooltipComponent>
                                     </Card.Header>
                                     <Card.Body />
-                                    <Card.Footer>
-                                        <Stack gap={4}>
-                                            <Stack color="fg.subtle" fontSize="sm" gap={0}>
-                                                {isWide && (
-                                                    <Card.Description>
-                                                        SCSpace 개인정보처리방침을 <Mark color={"blue"} fontWeight={"semibold"}>읽고 동의</Mark>하셔야 KAIST SSO로 로그인할 수 있습니다.
-                                                    </Card.Description>
-                                                )}
-                                                <Card.Description>
-                                                    You <Mark color={"blue"} fontWeight={"semibold"}>must read and agree</Mark> to the SCSpace Privacy Policy to log in with KAIST SSO.
-                                                </Card.Description>
-                                            </Stack>
-                                            <Dialog.Trigger width='100%' asChild>
-                                                <Button colorPalette="green">
-                                                    Read Privacy Policy
-                                                </Button>
-                                            </Dialog.Trigger>
-                                        </Stack>
-                                    </Card.Footer>
+                                    
                                 </Card.Root>
                             </Center>
                         </HStack>
