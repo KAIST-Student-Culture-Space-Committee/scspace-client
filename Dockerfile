@@ -4,6 +4,8 @@ FROM node:20-alpine AS base
 ENV PNPM_HOME=/root/.local/share/pnpm
 ENV PATH="$PNPM_HOME:$PATH"
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN apk add --no-cache libc6-compat python3 make g++ \
   && corepack enable
 WORKDIR /workspace
