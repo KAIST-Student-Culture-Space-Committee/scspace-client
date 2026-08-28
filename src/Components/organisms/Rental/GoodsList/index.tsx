@@ -45,11 +45,11 @@ export default function GoodsList(props: {
             <Scroll>
                 <Stack p={2}>
                     {!manage && (
-                        <Alert.Root status={"error"}>
+                        <Alert.Root status={"info"}>
                             <Alert.Indicator />
                             <Alert.Content>
-                                <Alert.Title>현재 대여 신청은 일시적으로 중단되었습니다.</Alert.Title>
-                                <Alert.Description>Rental Application page is under update.</Alert.Description>
+                                <Alert.Title>물품 대여는 공간위원회 상근 시간에만 가능합니다.</Alert.Title>
+                                <Alert.Description>공간위실에 방문하면 공간위원이 현장에서 대여를 등록합니다.</Alert.Description>
                             </Alert.Content>
                         </Alert.Root>
                     )}
@@ -62,8 +62,6 @@ export default function GoodsList(props: {
                             disabled={disabled}
                             manage={manage}
                             isWide={isWide ?? false}
-                            refetch={goodsListRefetch}
-                            countAvailable={item.countNow}
                         />
                     ))}
                 </Stack>

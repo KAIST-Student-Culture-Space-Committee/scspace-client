@@ -29,6 +29,7 @@ export const useQueryApi = <ResponseType>(
 
   return useQuery<ResponseType>({
     queryKey,
+    enabled: endpoint.length > 0,
     queryFn: async () => {
       const queryString = params
         ? "?" +
@@ -73,10 +74,7 @@ export const useFormDataMutation = <ResponseType>(
         try {
           const errorData = await res.json();
           errorMessage = errorData.message || errorData.error || res.statusText;
-          console.log(errorData, errorMessage);
-        } catch (parseError) {
-          console.log("JSON parsing fail");
-        }
+        } catch { }
 
         throw new Error(errorMessage);
       }
@@ -118,10 +116,7 @@ export const useMutationApi = <ResponseType, RequestParamType extends object>(
             try {
               const errorData = await res.json();
               errorMessage = errorData.message || errorData.error || res.statusText;
-              console.log(errorData, errorMessage);
-            } catch (parseError) {
-              console.log("JSON parsing fail");
-            }
+            } catch { }
 
             throw new Error(errorMessage);
           }
@@ -142,10 +137,7 @@ export const useMutationApi = <ResponseType, RequestParamType extends object>(
             try {
               const errorData = await res.json();
               errorMessage = errorData.message || errorData.error || res.statusText;
-              console.log(errorData, errorMessage);
-            } catch (parseError) {
-              console.log("JSON parsing fail");
-            }
+            } catch { }
 
             throw new Error(errorMessage);
           }

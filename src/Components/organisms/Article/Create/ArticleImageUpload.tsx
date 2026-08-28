@@ -28,7 +28,7 @@ function ImageUploadList() {
         } else {
             setSelect(0);
         }
-    }, [files.length]);
+    }, [files.length, select]);
 
     if (files.length === 0) return null;
 

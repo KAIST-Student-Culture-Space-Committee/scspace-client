@@ -9,16 +9,17 @@ import { IArticleQuery } from "@scspace-depot/types/article";
 import { useEffect } from "react";
 import { AiOutlineEyeInvisible } from "react-icons/ai";
 
-export default function ArticleTable({ refetchTrigger, query }: {
+export default function ArticleTable({ refetchTrigger, query, manage = false }: {
     refetchTrigger: number;
-    query: IArticleQuery
+    query: IArticleQuery;
+    manage?: boolean;
 }) {
-    const { data, refetch } = useArticleAPI({ query }).articles;
+    const { data, refetch } = useArticleAPI({ query, manage }).articles;
     const { getString } = dateUtils();
 
     useEffect(() => {
         refetch();
-    }, [refetchTrigger]);
+    }, [refetch, refetchTrigger]);
 
     const { linkPush } = useLinkPush();
 

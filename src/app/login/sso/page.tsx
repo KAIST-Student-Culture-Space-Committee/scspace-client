@@ -28,7 +28,7 @@ export default function LoginPage() {
     const server_url = process.env.NEXT_PUBLIC_SSO_LOGIN_URL ?? "";
     const redirect_uri = process.env.NEXT_PUBLIC_REDIRECT_URL ?? "";
     // const state = randomString();
-    const state = process.env.NEXT_PUBLIC_SSO_STATE3 ?? ""; // 김휘림 여길 봐
+    const state = process.env.NEXT_PUBLIC_SSO_STATE3 ?? "";
     const nonce = randomString();
 
     const form = document.createElement('form');

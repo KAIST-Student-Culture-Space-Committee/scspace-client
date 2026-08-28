@@ -7,7 +7,6 @@ import InputComponent from "../../molecules/forms/Input";
 import { HiPlus } from "react-icons/hi2";
 import TooltipComponent from "@scspace-client/Components/atoms/Tooptip";
 import NewOrganizationNotice from "./NewOrganizationNotice";
-import { useMailAPI } from "@scspace-client/Hooks/mail";
 import { toaster } from "@scspace-client/Components/atoms/Toaster";
 
 export default function NewOrganizationBtn({ uid, onSuccess }: {
@@ -22,34 +21,19 @@ export default function NewOrganizationBtn({ uid, onSuccess }: {
 
     const isWide = useBreakpointValue({ base: false, md: true });
 
-    const sendMail = useMailAPI().sendMail;
-
     const createOrg = () => {
         if (!name || !description || !uid) return;
 
         toaster.promise(
             generateOrganization({
                 hasRoom: false,
-                name: name,
-                delegatorId: uid
+                name,
+                delegatorId: uid,
+                description,
             }, {
                 onSuccess: () => {
-                    sendMail({
-                        to: "scspace.kaist@gmail.com",
-                        subject: `신규 등록 조직 소명: ${name}`,
-                        template: "orgDescription",
-                        context: {
-                            meta: {
-                                organizationName: name,
-                                organizationDescription: description
-                            }
-                        }
-                    }, {
-                        onSuccess: () => {
-                            onSuccess();
-                            setOpen(false)
-                        }
-                    });
+                    onSuccess();
+                    setOpen(false);
                 }
             }),
             {

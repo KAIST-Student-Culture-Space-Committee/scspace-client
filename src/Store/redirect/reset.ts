@@ -49,7 +49,7 @@ export function useRedirects() {
     useEffect(() => {
         refetchActiveSeminarLotteryInfo();
         refetchActivePerformanceLotteryInfo();
-    }, [pathname]);
+    }, [pathname, refetchActivePerformanceLotteryInfo, refetchActiveSeminarLotteryInfo]);
 
     useEffect(() => {
         update([
@@ -219,5 +219,5 @@ export function useRedirects() {
                 invisible: !isPasspinMaster,
             },
         ]);
-    }, [spaceLinks, isLogined, isManager, isAdmin, isWorker, isPasspinMaster, userInfo]);
+    }, [activePerformanceLotteryInfo, activeSeminarLotteryInfo, calendarLinks, isAdmin, isLogined, isManager, isPasspinMaster, isWorker, spaceLinks, update, userInfo]);
 }

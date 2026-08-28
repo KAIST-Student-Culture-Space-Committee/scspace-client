@@ -1,6 +1,6 @@
 import { Dialog, DialogBackdrop, Button, IconButton, Portal, Fieldset, Field, HStack, PinInput, Stack, Text, Flex, VStack, Wrap, Grid, useBreakpointValue } from "@chakra-ui/react";
 import { useStudent } from "@scspace-client/Hooks/user";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { HiPlus } from "react-icons/hi";
 import { IUser } from "@scspace-depot/types/user";
 import { HiMiniXMark } from "react-icons/hi2";
@@ -56,14 +56,14 @@ export default function AddMemberBtn({ oid, refetch }: {
     const [selected, setSelected] = useState<IUser[]>([]);
     const [isSelected, setIsSelected] = useState<{ [key: string]: boolean }>({});
 
-    useEffect(() => apply(), [value]);
-
-    function apply() {
+    const apply = useCallback(() => {
         for (const v of value) if (!v) {
             return;
         }
         setSid(value.join(""));
-    }
+    }, [value]);
+
+    useEffect(() => apply(), [apply]);
 
     const { student } = useStudent({ studentNumber: sid });
 

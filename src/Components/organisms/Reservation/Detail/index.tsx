@@ -63,7 +63,7 @@ export default function ReservationDetail({ open, setOpen, selectedRes, refetch 
                 }
             }
         );
-    }, [selectedRes, userInfo]);
+    }, [assignWorker, e, refetch, selectedRes, userInfo]);
 
     function onDelete() {
         toaster.promise(

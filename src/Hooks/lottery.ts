@@ -5,6 +5,7 @@ import { ILotteryInfo, ILotteryInfoCreate, ILotteryInfoUpdate } from "@scspace-d
 import { ISeminarLottery, ISeminarLotteryCreate } from "@scspace-depot/types/lottery/lottery.seminar.type";
 import { IPerformanceLottery, IPerformanceLotteryCreate } from "@scspace-depot/types/lottery/lottery.performance.type";
 import { ISuccessResponse } from "@scspace-depot/types/common/common.type";
+import { IReservationMultipleCreateResurt } from "@scspace-depot/types/reservation";
 
 // 통합 Lottery Info API Hook (추첨 정보 관리)
 export function useSeminarLotteryInfoAPI(id?: number) {
@@ -29,12 +30,12 @@ export function useSeminarLotteryInfoAPI(id?: number) {
         "DELETE"
     ).mutate;
 
-    const applySeminarLottery = useMutationApi<ISuccessResponse, {}>(
+    const applySeminarLottery = useMutationApi<IReservationMultipleCreateResurt[], { infoId: number }>(
         `/lottery/seminar/apply`,
         "POST"
     ).mutate;
 
-    const drawSeminarLottery = useMutationApi<ISuccessResponse, {}>(
+    const drawSeminarLottery = useMutationApi<ISuccessResponse, { infoId: number }>(
         `/lottery/seminar/draw`,
         "POST"
     ).mutate;
@@ -73,7 +74,7 @@ export function useSeminarLotteryAPI(params?: {
 
     // GET Hook들을 최상위에서 호출
     const lotteryByOrganization = useQueryApi<ISeminarLottery[]>(
-        `/lottery/seminar?organizationId=${organizationId}&spaceId=${spaceId}&infoId=${infoId}`
+        `/lottery/seminar?organizationId=${organizationId}&infoId=${infoId}`
     );
 
     const lotteryByTime = useQueryApi<ISeminarLottery[]>(

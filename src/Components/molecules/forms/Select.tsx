@@ -8,7 +8,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import CheckComponent from "./Checkbox";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import { SmallLoading } from "@scspace-client/Components/atoms/Loading";
 
 export interface ISelectOption {
@@ -43,14 +43,21 @@ export default function SelectComponent({
   const [_value, _setValue] = useState<string>("");
   const [_label, _setLabel] = useState<string>("");
   const [_dscrp, _setDscrp] = useState<string>("");
+  const previousDefaultValue = useRef(defaultValue);
 
   useEffect(() => {
     if (optionList.length === 0) return;
 
+    const defaultChanged = previousDefaultValue.current !== defaultValue;
+    const currentValueIsValid = optionList.some((option) => option.value === _value);
+    if (!defaultChanged && currentValueIsValid) return;
+
+    previousDefaultValue.current = defaultValue;
+
     _setValue(defaultValue ?? optionList[0].value ?? "");
     _setLabel(optionList.find(o => o.value === defaultValue)?.label ?? optionList[0].label ?? "");
     _setDscrp(optionList.find(o => o.value === defaultValue)?.description ?? optionList[0].description ?? "");
-  }, [optionList.length]);
+  }, [defaultValue, optionList, _value]);
 
   return (options.items.length === 0) ? (
     <SmallLoading />
@@ -63,7 +70,6 @@ export default function SelectComponent({
         _setValue(e.value[0]);
         _setDscrp(e.items[0].description ?? "");
         _setLabel(e.items[0].label);
-        console.log(e);
         onChange(e.items[0]);
       }}
     >

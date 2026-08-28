@@ -39,7 +39,7 @@ export default function UserReservation() {
 
     useEffect(() => {
         if (parseInt(_limit) != limit) setLimit(parseInt(_limit));
-    }, [_limit]);
+    }, [_limit, limit]);
 
     const [selected, setSelected] = useState<IReservationAll | null>(null);
     const [open, setOpen] = useState<boolean>(false);
@@ -52,7 +52,7 @@ export default function UserReservation() {
         offset: limit * (page - 1)
     }).userReservation;
 
-    useEffect(() => { refetch(); }, [page, limit, userInfo?.id || 0]);
+    useEffect(() => { refetch(); }, [limit, page, refetch, userInfo?.id]);
 
     useEffect(() => {
         setSelected(reservation?.data[0] ?? null);

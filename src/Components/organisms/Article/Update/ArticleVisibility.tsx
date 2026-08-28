@@ -11,7 +11,7 @@ export default function ArticleVisibility({ state, id, refetch }: {
     id: number;
     refetch: () => void;
 }) {
-    const updateArticleState = useArticleAPI({ id }).updateArticleState;
+    const updateArticleState = useArticleAPI({ id, manage: true }).updateArticleState;
     const [error, setError] = useState<string>("");
 
     const handleUpdate = (state: ArticleStateEnum) => {
@@ -49,7 +49,6 @@ export default function ArticleVisibility({ state, id, refetch }: {
             <Flex justify={"start"} gap={4}>
                 {[
                     ArticleStateEnum.HIDE,
-                    ArticleStateEnum.FOR_KAIST,
                     ArticleStateEnum.FOR_ALL
                 ].map((enumValue) => (
                     <RadioGroup.Item

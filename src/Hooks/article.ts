@@ -3,7 +3,10 @@
 import { useFormDataMutation, useMutationApi, useQueryApi } from "./api";
 import {
     IArticle,
+    IArticleFetchResult,
     IArticlePreview,
+    IArticlePublicFetchResult,
+    IArticlePublicWithUser,
     IArticleQuery,
     IArticleUpdate,
     IArticleWithUser,
@@ -13,34 +16,19 @@ import {
 export function useArticleAPI(params?: {
     id?: number;
     query?: IArticleQuery;
+    manage?: boolean;
 }) {
-    const { id, query } = params || {};
+    const { id, query, manage = false } = params || {};
+    const baseEndpoint = manage ? "/article/manage" : "/article";
 
     // GET Hook들을 최상위에서 호출
-    const articles = useQueryApi<{
-        articles: IArticleWithUser[];
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-    }>(
-        "/article",
+    const articles = useQueryApi<IArticlePublicFetchResult | IArticleFetchResult>(
+        baseEndpoint,
         query
     );
 
-    const articleById = useQueryApi<IArticleWithUser>(
-        (id && id > 0) ? `/article/${id}` : ""
-    );
-
-    const myArticles = useQueryApi<{
-        articles: IArticle[];
-        total: number;
-        page: number;
-        limit: number;
-        totalPages: number;
-    }>(
-        "/article/my",
-        query
+    const articleById = useQueryApi<IArticlePublicWithUser | IArticleWithUser>(
+        (id && id > 0) ? `${baseEndpoint}/${id}` : ""
     );
 
     const articlePreviews = useQueryApi<IArticlePreview>(
@@ -78,7 +66,6 @@ export function useArticleAPI(params?: {
         // GET 데이터와 상태들
         articles,
         articleById,
-        myArticles,
         articlePreviews,
 
         // CUD 메서드들

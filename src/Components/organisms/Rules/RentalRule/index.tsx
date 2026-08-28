@@ -1,6 +1,7 @@
 import { Badge, Blockquote, Field, Fieldset, Heading, Stack, Text } from "@chakra-ui/react";
 import SimpleLink from "@scspace-client/Components/atoms/SimpleLink";
 import { BlueMark, RedMark } from "../utils";
+import { RENTAL_DUTY_HOURS_KO } from "@scspace-depot/consts/rental.const";
 
 export default function RentalRule() {
     return (
@@ -22,7 +23,7 @@ export default function RentalRule() {
                         <Blockquote.Content>
                             <Stack>
                                 <Text>
-                                    공간위에서는 대여를 위한 다양한 규칙과 절차를 마련하고 있습니다.
+                                    물품 대여는 공간위원회 상근 시간에 공간위실을 방문하여 진행합니다.
                                 </Text>
                                 <Text>
                                     의자, 책상 및 다양한 물품들을 대여할 수 있으며, 대여 가능한 물품들은 <SimpleLink href="/rental/application" text="찾아보기 > 대여" />에서 확인할 수 있습니다.
@@ -39,13 +40,13 @@ export default function RentalRule() {
                         <Blockquote.Content>
                             <Stack>
                                 <Text>
-                                    활성화된(반납하지 않은) 대여는 한번에 최대 5개 까지만 신청할 수 있고, 반납한 뒤엔 추가로 신청할 수 있습니다.
+                                    대여 가능 시간은 <BlueMark>{RENTAL_DUTY_HOURS_KO}</BlueMark>입니다. 이외의 시간에는 대여가 불가능할 수 있습니다.
                                 </Text>
                                 <Text>
-                                    반납 기한은 대여 시점으로부터 일주일 뒤 날짜의 23시 59분이며, <SimpleLink href="/mypage/rental" text="마이페이지 > 대여" />에서 확인한 뒤에 반납할 수 있습니다.
+                                    공간위원이 대여자와 물품, 수량, 사용 목적 및 반납 기한을 확인한 뒤 현장에서 대여를 등록합니다.
                                 </Text>
                                 <Text>
-                                    반납 신청은 반드시 <BlueMark>실제로 물품을 반납한 뒤에</BlueMark> 신청하여야 하며, 이후 공간워원의 검토를 통해 반납이 완료됩니다.
+                                    반납은 상근 시간에 물품을 가져오면 공간위원이 체크리스트를 확인한 뒤 완료 처리합니다. 대여 내역과 기한은 <SimpleLink href="/mypage/rental" text="마이페이지 > 대여" />에서 확인할 수 있습니다.
                                 </Text>
                             </Stack>
                         </Blockquote.Content>

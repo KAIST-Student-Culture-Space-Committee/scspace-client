@@ -17,52 +17,55 @@ import DatePicker from "react-datepicker";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi2";
 import { CalendarView } from "../../../../organisms/Reservation/Calendar";
 import RefetchBtn from "@scspace-client/Components/molecules/buttons/RefetchBtn";
+import { dateUtils } from "@scspace-client/Hooks/utils";
 
 export default function Calendar({ spaceId }: { spaceId: number }) {
   const [date, setDate] = useState<Date>(() => new Date());
+  const { addDateDays, getDayOfWeek } = dateUtils();
   const [open, setOpen] = useState<boolean>(false);
-  const [text, setText] = useState<string>("")
+  const [text, setText] = useState<string>("");
 
   const [searchData, setSearchData] = useState<{
     spaceId: number;
-    dateFrom: Date,
-    dateTo: Date
+    dateFrom: Date;
+    dateTo: Date;
   } | null>(null);
 
   useEffect(() => {
-    const dS = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const dE = new Date(dS);
-    const d = date.getDay();
-
-    dS.setDate(dS.getDate() - d);
-    dE.setDate(dE.getDate() - d + 6);
+    const d = (getDayOfWeek(date) + 6) % 7;
+    const dS = addDateDays(date, -d);
+    const dE = addDateDays(date, -d + 6);
 
     setText(dS.toLocaleDateString() + " - " + dE.toLocaleDateString());
 
     setSearchData({
       spaceId: spaceId,
       dateFrom: dS,
-      dateTo: dE
+      dateTo: dE,
     });
-  }, [spaceId, date.getTime()]);
+  }, [spaceId, date, addDateDays, getDayOfWeek]);
 
   const isWide = useBreakpointValue({ base: false, md: true });
   const [refetchCounter, setRefetchCounter] = useState(0);
 
   return (
     <Scroll>
-      <Grid
-        height="100%"
-        templateRows="auto 1fr"
-        gap={2}
-      >
-        <Dialog.Root size={isWide ? "xs" : "full"} open={open} onOpenChange={(e) => setOpen(e.open)}>
+      <Grid height="100%" templateRows="auto 1fr" gap={2}>
+        <Dialog.Root
+          size={isWide ? "xs" : "full"}
+          open={open}
+          onOpenChange={e => setOpen(e.open)}
+        >
           <Grid templateColumns="auto 1fr auto auto" gap={2}>
-            <IconButton variant="outline" bg={{ base: "bg", _hover: "bg.muted" }} onClick={() => setDate((d) => {
-              const _d = new Date(d);
-              _d.setDate(d.getDate() - 7);
-              return _d;
-            })}>
+            <IconButton
+              variant="outline"
+              bg={{ base: "bg", _hover: "bg.muted" }}
+              onClick={() =>
+                setDate(d => {
+                  return addDateDays(d, -7);
+                })
+              }
+            >
               <HiChevronLeft />
             </IconButton>
             <Dialog.Trigger asChild width="100%">
@@ -70,11 +73,15 @@ export default function Calendar({ spaceId }: { spaceId: number }) {
                 {text}
               </Button>
             </Dialog.Trigger>
-            <IconButton variant="outline" bg={{ base: "bg", _hover: "bg.muted" }} onClick={() => setDate((d) => {
-              const _d = new Date(d);
-              _d.setDate(d.getDate() + 7);
-              return _d;
-            })}>
+            <IconButton
+              variant="outline"
+              bg={{ base: "bg", _hover: "bg.muted" }}
+              onClick={() =>
+                setDate(d => {
+                  return addDateDays(d, 7);
+                })
+              }
+            >
               <HiChevronRight />
             </IconButton>
             <RefetchBtn refetch={() => setRefetchCounter(c => c + 1)} />
@@ -84,9 +91,7 @@ export default function Calendar({ spaceId }: { spaceId: number }) {
             <Dialog.Positioner>
               <Dialog.Content className={isWide ? "" : "full"}>
                 <Dialog.Header>
-                  <Dialog.Title>
-                    Pick Week
-                  </Dialog.Title>
+                  <Dialog.Title>Pick Week</Dialog.Title>
                 </Dialog.Header>
                 <Dialog.Body>
                   <Center>
@@ -94,7 +99,7 @@ export default function Calendar({ spaceId }: { spaceId: number }) {
                       wrapperClassName="datepicker"
                       showWeekPicker
                       selected={date}
-                      onChange={(e) => {
+                      onChange={e => {
                         if (e) setDate(e);
                         setOpen(false);
                       }}
@@ -120,6 +125,6 @@ export default function Calendar({ spaceId }: { spaceId: number }) {
           <LoadingComponent />
         )}
       </Grid>
-    </Scroll >
+    </Scroll>
   );
 }

@@ -23,6 +23,9 @@ import { IGoods, IRentalCreateAdmin } from "@scspace-depot/types/rental";
 import { useGoodsAPI } from "@scspace-client/Hooks/rental";
 import { useMutationApi } from "@scspace-client/Hooks/api";
 import LoadingComponent from "@scspace-client/Components/atoms/Loading";
+import { Temporal } from "@js-temporal/polyfill";
+import { dateUtils } from "@scspace-client/Hooks/utils";
+import { RENTAL_DUTY_HOURS_KO } from "@scspace-depot/consts/rental.const";
 
 interface RentalFormData {
     user: IUser | null;
@@ -33,6 +36,15 @@ interface RentalFormData {
     emergencyContact: string;
     usingLocation: string;
     usingPurpose: string;
+    timeDue: string;
+}
+
+function getDefaultDueTime(): string {
+    return Temporal.Now.zonedDateTimeISO("Asia/Seoul")
+        .add({ days: 7 })
+        .with({ hour: 23, minute: 59, second: 0, millisecond: 0 })
+        .toPlainDateTime()
+        .toString({ smallestUnit: "minute" });
 }
 
 export default function RentalWizard() {
@@ -46,6 +58,7 @@ export default function RentalWizard() {
         emergencyContact: "",
         usingLocation: "",
         usingPurpose: "",
+        timeDue: getDefaultDueTime(),
     });
 
     const { allGoods } = useGoodsAPI();
@@ -62,6 +75,14 @@ export default function RentalWizard() {
         formData.count >= 1 &&
         formData.count <= formData.goods.countNow,
     );
+    const detailsAreValid = Boolean(
+        formData.groupName.trim() &&
+        formData.contact.trim() &&
+        formData.emergencyContact.trim() &&
+        formData.usingLocation.trim() &&
+        formData.usingPurpose.trim() &&
+        formData.timeDue,
+    );
 
     const handleUserSelect = (user: IUser) => {
         setFormData((prev) => ({ ...prev, user }));
@@ -74,20 +95,30 @@ export default function RentalWizard() {
     };
 
     const handleDetailsSubmit = () => {
-        if (!countIsValid) {
+        if (!countIsValid || !detailsAreValid) {
             return;
         }
         setStep(3);
     };
 
     const handleFinalSubmit = async () => {
-        if (!formData.user || !formData.goods || !countIsValid) return;
+        if (!formData.user || !formData.goods || !countIsValid || !detailsAreValid) return;
+
+        const due = Temporal.PlainDateTime.from(formData.timeDue);
+        const timeDue = dateUtils().getTime({
+            year: due.year,
+            month: due.month - 1,
+            day: due.day,
+            hour: due.hour,
+            minute: due.minute,
+        });
 
         try {
             const payload: IRentalCreateAdmin = {
                 userId: formData.user.id,
                 goodsId: formData.goods.id,
                 count: formData.count,
+                timeDue,
                 groupName: formData.groupName || "",
                 contact: formData.contact || "",
                 emergencyContact: formData.emergencyContact || "",
@@ -106,6 +137,7 @@ export default function RentalWizard() {
                 emergencyContact: "",
                 usingLocation: "",
                 usingPurpose: "",
+                timeDue: getDefaultDueTime(),
             });
             setStep(0);
 
@@ -125,6 +157,9 @@ export default function RentalWizard() {
 
     return (
         <VStack align="stretch" gap={6} p={4}>
+            <Text color="fg.muted">
+                대여 등록 가능 상근 시간: {RENTAL_DUTY_HOURS_KO}
+            </Text>
             <Steps.Root
                 count={steps.length}
                 step={step}
@@ -249,7 +284,25 @@ export default function RentalWizard() {
                             )}
                             <FieldComponent
                                 options={{
+                                    label: "Return Deadline",
+                                    required: true,
+                                }}
+                            >
+                                <Input
+                                    type="datetime-local"
+                                    value={formData.timeDue}
+                                    onChange={(e) =>
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            timeDue: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </FieldComponent>
+                            <FieldComponent
+                                options={{
                                     label: "Group Name",
+                                    required: true,
                                 }}
                             >
                                 <Input
@@ -266,6 +319,7 @@ export default function RentalWizard() {
                             <FieldComponent
                                 options={{
                                     label: "Contact",
+                                    required: true,
                                 }}
                             >
                                 <Input
@@ -282,6 +336,7 @@ export default function RentalWizard() {
                             <FieldComponent
                                 options={{
                                     label: "Emergency Contact",
+                                    required: true,
                                 }}
                             >
                                 <Input
@@ -298,6 +353,7 @@ export default function RentalWizard() {
                             <FieldComponent
                                 options={{
                                     label: "Using Location",
+                                    required: true,
                                 }}
                             >
                                 <Input
@@ -314,6 +370,7 @@ export default function RentalWizard() {
                             <FieldComponent
                                 options={{
                                     label: "Using Purpose",
+                                    required: true,
                                 }}
                             >
                                 <Textarea
@@ -335,7 +392,7 @@ export default function RentalWizard() {
                                 <Button
                                     onClick={handleDetailsSubmit}
                                     colorPalette="blue"
-                                    disabled={!countIsValid}
+                                    disabled={!countIsValid || !detailsAreValid}
                                 >
                                     Next
                                 </Button>
@@ -364,6 +421,9 @@ export default function RentalWizard() {
                                 <DataListItem label="Quantity">
                                     {formData.count}
                                 </DataListItem>
+                                <DataListItem label="Return Deadline">
+                                    {formData.timeDue.replace("T", " ")}
+                                </DataListItem>
                                 <Separator />
                                 <DataListItem label="Group Name">
                                     {formData.groupName || "N/A"}
@@ -389,7 +449,7 @@ export default function RentalWizard() {
                                     onClick={handleFinalSubmit}
                                     colorPalette="green"
                                     loading={createRentalMutation.isPending}
-                                    disabled={!formData.user || !formData.goods || !countIsValid}
+                                    disabled={!formData.user || !formData.goods || !countIsValid || !detailsAreValid}
                                 >
                                     Submit Rental
                                 </Button>

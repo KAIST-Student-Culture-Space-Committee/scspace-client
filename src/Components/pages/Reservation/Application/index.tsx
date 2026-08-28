@@ -30,7 +30,6 @@ import { useReservationAPI } from "@scspace-client/Hooks/reservation";
 import { toaster } from "@scspace-client/Components/atoms/Toaster";
 import { dateUtils } from "@scspace-client/Hooks/utils";
 import InputComponent from "@scspace-client/Components/molecules/forms/Input";
-import { useMailAPI } from "@scspace-client/Hooks/mail";
 import { IndividualOrganizationId } from "@scspace-depot/consts/organization.const";
 
 export default function ReservationApplication() {
@@ -43,11 +42,7 @@ export default function ReservationApplication() {
 
   useEffect(() => {
     if (dateFrom > dateTo) setDateTo(dateFrom);
-  }, [dateFrom.getTime()]);
-
-  useEffect(() => {
-    if (dateFrom > dateTo) setDateFrom(dateTo);
-  }, [dateTo.getTime()]);
+  }, [dateFrom, dateTo]);
 
   const [hourFrom, setHourFrom] = useState<number>(0);
   const [hourTo, setHourTo] = useState<number>(0);
@@ -64,7 +59,6 @@ export default function ReservationApplication() {
   const [workerNeedReason, setWorkerNeedReason] = useState<string>("");
 
   const createReservation = useReservationAPI().createRes;
-  const sendMail = useMailAPI().sendMail;
 
   const [e, setE] = useState<string | null>(null);
 
@@ -98,7 +92,10 @@ export default function ReservationApplication() {
             outerParticipantNumber: outer,
             food: food,
             busking: check && (spaceId === 13),
-            workerNeed: (spaceId === 10 || spaceId === 11) ? worker : false
+            workerNeed: (spaceId === 10 || spaceId === 11) ? worker : false,
+            workerNeedReason: worker && (spaceId === 10 || spaceId === 11)
+              ? workerNeedReason
+              : undefined,
           },
           userId: userInfo.id,
           organizationId: orgId,
@@ -110,18 +107,6 @@ export default function ReservationApplication() {
         {
           onSuccess: () => {
             setCount(c => c + 1);
-            if (worker && (spaceId === 10 || spaceId === 11)) {
-              sendMail({
-                to: "scspace.kaist@gmail.com",
-                subject: `근로 요청 이유: ${userInfo.nameKr}`,
-                template: "workerNeedReason",
-                context: {
-                  meta: {
-                    description: workerNeedReason
-                  }
-                }
-              });
-            }
           },
           onError: (error) => {
             setE(error.message);

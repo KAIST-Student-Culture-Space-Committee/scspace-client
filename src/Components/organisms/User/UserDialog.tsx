@@ -41,7 +41,8 @@ export default function UserDialog({
         offset: 50 * (page - 1)
     }).userReservation;
     const [selectedRes, setSelectedRes] = useState<IReservationAll | null>(null);
-    useEffect(() => { refetchRes(); }, [page, user?.id || 0]);
+    const userId = user?.id || 0;
+    useEffect(() => { refetchRes(); }, [page, refetchRes, userId]);
     useEffect(() => { setSelectedRes(reservation?.data[0] ?? null); }, [reservation]);
 
     const { getString } = dateUtils();

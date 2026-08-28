@@ -24,7 +24,7 @@ export default function ArticleAddFileBtn({ id, refetch }: {
 
     const [error, setError] = useState<string>("");
 
-    const updateArticleFile = useArticleAPI({ id }).updateArticleFile;
+    const updateArticleFile = useArticleAPI({ id, manage: true }).updateArticleFile;
 
     const handleUpload = () => {
         if (imageUpload.acceptedFiles.length === 0 && fileUpload.acceptedFiles.length === 0) {

@@ -7,8 +7,8 @@ export default function Rental() {
     const pages: IPage[] = [
         {
             href: "/rental/application",
-            kor: "신청",
-            eng: "Application",
+            kor: "대여 물품",
+            eng: "Goods",
             preview: (<RentalApplication />)
         },
         {

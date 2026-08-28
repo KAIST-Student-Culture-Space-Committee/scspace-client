@@ -9,6 +9,8 @@ export default function SeminarLotteryNotice() {
     } = {
         eng: [
             { content: "You can select a time slot to apply for the seminar lottery.", },
+            { content: "Across Seminar Rooms 1 and 2, you can submit one slot for each of your first, second, and third preferences." },
+            { content: "Each organization can win at most one slot. Once selected, its remaining applications are removed." },
             { content: "The number in each column represents the number of organizations that applied during that time.", },
             {
                 content: (
@@ -18,7 +20,7 @@ export default function SeminarLotteryNotice() {
                 )
             },
             {
-                content: "Organizations without group rooms have priority in the lottery.",
+                content: "The order is first preference without a group room, first preference with a group room, then the same order for second and third preferences.",
                 color: "blue"
             },
             {
@@ -38,6 +40,8 @@ export default function SeminarLotteryNotice() {
         ],
         kor: [
             { content: "세미나 추첨을 신청할 시간대를 선택할 수 있습니다.", },
+            { content: "세미나실 1·2를 합쳐 1·2·3지망별로 시간대 하나씩 신청할 수 있습니다." },
+            { content: "조직당 최대 한 시간대만 당첨되며, 당첨된 조직의 나머지 신청은 삭제됩니다." },
             { content: "각 열의 숫자는 해당 시간에 신청한 조직의 수를 나타냅니다.", },
             {
                 content: (
@@ -47,7 +51,7 @@ export default function SeminarLotteryNotice() {
                 )
             },
             {
-                content: "단체실이 없는 조직이 추첨에서 우선권을 가집니다.",
+                content: "1지망 무동방, 1지망 동방 보유, 2지망 무동방, 2지망 동방 보유, 3지망 무동방, 3지망 동방 보유 순서로 배정됩니다.",
                 color: "blue"
             },
             {

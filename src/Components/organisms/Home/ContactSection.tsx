@@ -1,5 +1,6 @@
 import { Box, IconButton, Link, Mark, Separator, Stack, Text } from "@chakra-ui/react";
 import { IoLogoInstagram, IoMailOutline } from "react-icons/io5";
+import { RENTAL_DUTY_HOURS_KO } from "@scspace-depot/consts/rental.const";
 
 export default function ContactSection() {
     return (
@@ -18,9 +19,7 @@ export default function ContactSection() {
                     N13-1 장영신학생회관 309호
                 </Text>
                 <Text color="gray.500" fontSize={"sm"}>
-                    월 - 수요일 상근 19 - 21 시
-                    <br />
-                    목요일 상근 21 - 23 시
+                    상근 시간: {RENTAL_DUTY_HOURS_KO}
                 </Text>
                 <Link
                     target='_blank'

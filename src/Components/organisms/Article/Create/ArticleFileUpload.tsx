@@ -27,7 +27,7 @@ function FileUploadList() {
         } else {
             setSelect(0);
         }
-    }, [files]);
+    }, [files.length, select]);
 
     if (files.length === 0) return null;
 

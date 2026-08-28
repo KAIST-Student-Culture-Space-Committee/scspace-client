@@ -51,7 +51,7 @@ export default function ManageDialog({ id, onChange }: {
             setCountAll(0);
         }
         fileUpload.clearFiles();
-    }, [goodsData]);
+    }, [fileUpload, goodsData]);
 
     const handleCreate = useCallback(() => {
         if (!name) {
@@ -109,7 +109,7 @@ export default function ManageDialog({ id, onChange }: {
                 }
             }
         );
-    }, [name, description, countAll, createGoods, errorMessage, fileUpload]);
+    }, [countAll, createGoods, description, errorMessage, fileUpload, name, onChange]);
 
     const handleUpdate = useCallback(() => {
         const formData = new FormData();
@@ -145,7 +145,7 @@ export default function ManageDialog({ id, onChange }: {
                 }
             }
         );
-    }, [name, description, countAll, updateGoods, errorMessage, fileUpload]);
+    }, [countAll, description, errorMessage, fileUpload, name, onChange, updateGoods]);
 
     const handleDelete = useCallback(() => {
         toaster.promise(
@@ -173,7 +173,7 @@ export default function ManageDialog({ id, onChange }: {
                 }
             }
         )
-    }, [deleteGoods, goodsRefetch]);
+    }, [deleteGoods, errorMessage, onChange]);
 
     return (
         <Dialog.Root

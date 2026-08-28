@@ -11,7 +11,7 @@ export default function SeminarLotteryStatus() {
 
     useEffect(() => {
         refetch();
-    }, []);
+    }, [refetch]);
 
     return (
         <Alert.Root status={(activeLotteryInfo && activeLotteryInfo.length > 0) ? "info" : "error"

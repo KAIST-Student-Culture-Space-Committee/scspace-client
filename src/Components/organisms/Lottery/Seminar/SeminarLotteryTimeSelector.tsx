@@ -24,6 +24,16 @@ import { toaster } from "@scspace-client/Components/atoms/Toaster";
 import { useSeminarLotteryAPI, useSeminarLotteryInfoAPI } from "@scspace-client/Hooks/lottery";
 import { useLinkPush } from "@scspace-client/Hooks/api";
 import { useOrganizationAPI } from "@scspace-client/Hooks/organization";
+
+const WEEK_DAYS = [
+    { key: "sunday", label: "Sun", index: 0 },
+    { key: "monday", label: "Mon", index: 1 },
+    { key: "tuesday", label: "Tue", index: 2 },
+    { key: "wednesday", label: "Wed", index: 3 },
+    { key: "thursday", label: "Thu", index: 4 },
+    { key: "friday", label: "Fri", index: 5 },
+    { key: "saturday", label: "Sat", index: 6 },
+];
 import DeleteBtn from "@scspace-client/Components/molecules/buttons/DeleteBtn";
 import { dateUtils } from "@scspace-client/Hooks/utils";
 import RefetchBtn from "@scspace-client/Components/molecules/buttons/RefetchBtn";
@@ -38,9 +48,19 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
     const [readOnly, setReadOnly] = useState<boolean>(false);
     const [appliedId, setAppliedId] = useState<number>(-1);
     const { linkPush } = useLinkPush();
-    const { getTime } = dateUtils();
+    const { getNow } = dateUtils();
+    const [now, setNow] = useState<number>(() => getNow());
+
+    useEffect(() => {
+        const timer = window.setInterval(() => setNow(getNow()), 60_000);
+        return () => window.clearInterval(timer);
+    }, [getNow]);
 
     const {
+        allLotteryInfo: {
+            data: allLotteryInfo,
+            refetch: refetchAllLotteryInfo,
+        },
         activeLotteryInfo: {
             data: activeLotteryInfo,
             refetch: refetchActiveLotteryInfo
@@ -49,7 +69,24 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
         applySeminarLottery,
     } = useSeminarLotteryInfoAPI();
 
-    if (!isAdmin && activeLotteryInfo && (activeLotteryInfo.length === 0 || activeLotteryInfo[0].applied)) {
+    const activeLottery = activeLotteryInfo?.[0];
+    const openLotteryInfo = activeLottery && activeLottery.timeLotteryEnd >= now
+        ? activeLottery
+        : undefined;
+    const pendingLotteryInfo = isAdmin && !openLotteryInfo
+        ? allLotteryInfo?.find((lotteryInfo) =>
+            !lotteryInfo.applied &&
+            lotteryInfo.timeLotteryEnd < now &&
+            now <= lotteryInfo.timeEnd,
+        )
+        : undefined;
+    const displayedLotteryInfo = openLotteryInfo ?? pendingLotteryInfo;
+
+    if (!isAdmin && activeLotteryInfo && (
+        activeLotteryInfo.length === 0 ||
+        activeLotteryInfo[0].applied ||
+        activeLotteryInfo[0].timeLotteryEnd < now
+    )) {
         alert("It is NOT a seminar room lottery period");
         linkPush("/");
     }
@@ -61,12 +98,13 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
             orgId === -1 ||
             !activeLotteryInfo ||
             activeLotteryInfo.length === 0 ||
-            activeLotteryInfo[0].timeLotteryEnd < getTime(new Date()) ||
+            activeLotteryInfo[0].timeLotteryEnd < now ||
             !editable ||
             activeLotteryInfo[0].applied
         );
-    }, [orgId, activeLotteryInfo, editable]);
+    }, [orgId, activeLotteryInfo, editable, now]);
 
+    const weekDays = WEEK_DAYS;
     const [selectedTime, setSelectedTime] = useState<number>(-1);
     const [selectedTimeString, setSelectedTimeString] = useState<string>("");
     useEffect(() => {
@@ -75,7 +113,7 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
             const dayLabel = weekDays[dayIndex].label;
             setSelectedTimeString(`${dayLabel} ${hour}:00 - ${hour + 1}:00`);
         }
-    }, [selectedTime]);
+    }, [selectedTime, weekDays]);
 
     const [open, setOpen] = useState<boolean>(false);
     useEffect(() => { if (selectedTime !== -1) setOpen(true); }, [selectedTime]);
@@ -103,14 +141,14 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
         id: appliedId,
         organizationId: orgId,
         spaceId,
-        infoId: (activeLotteryInfo && activeLotteryInfo.length > 0) ? activeLotteryInfo[0].id : -1,
+        infoId: displayedLotteryInfo?.id ?? -1,
         time: selectedTime,
     });
 
-    useEffect(() => { refetchTimeSlotCounts() }, [spaceId]);
-    useEffect(() => { if (selectedTime !== -1) { refetchLotteryByTime(); } }, [selectedTime, orgId, spaceId]);
-    useEffect(() => { refetchDrawnLottery(); }, [orgId, spaceId]);
-    useEffect(() => { refetchLotteryByOrganization(); }, [orgId, spaceId]);
+    useEffect(() => { refetchTimeSlotCounts() }, [refetchTimeSlotCounts, spaceId]);
+    useEffect(() => { if (selectedTime !== -1) { refetchLotteryByTime(); } }, [orgId, refetchLotteryByTime, selectedTime, spaceId]);
+    useEffect(() => { refetchDrawnLottery(); }, [orgId, refetchDrawnLottery, spaceId]);
+    useEffect(() => { refetchLotteryByOrganization(); }, [orgId, refetchLotteryByOrganization, spaceId]);
 
     const [available, setAvailable] = useState<boolean>(true);
 
@@ -126,16 +164,6 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
     }, [drawnLottery, selectedTime]);
 
     // 요일 배열 (월 ~ 일) - 인덱스가 날짜 번호 (0~6)
-    const weekDays = [
-        { key: "sunday", label: "Sun", index: 0 },
-        { key: "monday", label: "Mon", index: 1 },
-        { key: "tuesday", label: "Tue", index: 2 },
-        { key: "wednesday", label: "Wed", index: 3 },
-        { key: "thursday", label: "Thu", index: 4 },
-        { key: "friday", label: "Fri", index: 5 },
-        { key: "saturday", label: "Sat", index: 6 },
-    ];
-
     // 시간 배열 (18 ~ 3시: 18,19,20,21,22,23,0,1,2,3)
     const timeHours = Array.from({ length: 24 }, (_, i) => i);
 
@@ -156,10 +184,11 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
         refetchLotteryByTime();
         refetchLotteryByOrganization();
         refetchDrawnLottery();
+        refetchAllLotteryInfo();
         refetchActiveLotteryInfo();
     };
 
-    const createSeminarLotteryHandler = () => {
+    const createSeminarLotteryHandler = (priority: number) => {
         if (!activeLotteryInfo || activeLotteryInfo?.length === 0 || activeLotteryInfo[0].applied) return;
         if (orgId === -1) return;
         if (selectedTime === -1) return;
@@ -168,6 +197,7 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
             organizationId: orgId,
             spaceId,
             infoId: activeLotteryInfo[0].id,
+            priority,
             time: selectedTime,
         }, {
             onSuccess: () => {
@@ -221,7 +251,7 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
                                         if (!org) return null;
                                         return (
                                             <Badge colorPalette={org.hasRoom ? "blue" : "green"} key={l.id}>
-                                                {org.name}
+                                                {l.priority}지망 · {org.name}
                                             </Badge>
                                         );
                                     })}
@@ -231,15 +261,17 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
                                 <ActionBar.SelectionTrigger>
                                     {selectedTimeString}
                                 </ActionBar.SelectionTrigger>
-                                {available && !readOnly && (appliedId === -1) && (
+                                {available && !readOnly && (appliedId === -1) && [1, 2, 3].map((priority) => (
                                     <Button
+                                        key={priority}
                                         variant={"outline"}
                                         colorPalette={"blue"}
-                                        onClick={createSeminarLotteryHandler}
+                                        disabled={lotteryByOrganization?.some((lottery) => lottery.priority === priority)}
+                                        onClick={() => createSeminarLotteryHandler(priority)}
                                     >
-                                        Apply
+                                        {priority}지망 신청
                                     </Button>
-                                )}
+                                ))}
                                 {available && !readOnly && (appliedId !== -1) && (
                                     <Button
                                         variant={"outline"}
@@ -266,7 +298,7 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
             <Flex direction={"row"} justify={"flex-end"}>
                 <RefetchBtn refetch={refetchAll} />
             </Flex>
-            {(!activeLotteryInfo || activeLotteryInfo.length === 0) ? (
+            {!displayedLotteryInfo ? (
                 <Alert.Root>
                     <Alert.Indicator />
                     <Alert.Content>
@@ -375,7 +407,12 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
                                         }}
                                         orgCount={timeSlotCounts?.find(s => s.time === encodeTimeSlot(day.index, hour))?.count ?? 0}
                                         drawnOrgName={verifiedOrganizations?.find(o => o.id === drawnLottery?.find(l => l.time === encodeTimeSlot(day.index, hour))?.organizationId)?.name ?? null}
-                                        isOrgRequested={lotteryByOrganization?.some(l => l.time === encodeTimeSlot(day.index, hour)) ?? false}
+                                        isOrgRequested={lotteryByOrganization?.some(l =>
+                                            l.spaceId === spaceId && l.time === encodeTimeSlot(day.index, hour)
+                                        ) ?? false}
+                                        orgPriority={lotteryByOrganization?.find(l =>
+                                            l.spaceId === spaceId && l.time === encodeTimeSlot(day.index, hour)
+                                        )?.priority}
                                     />
                                 ))}
                             </>
@@ -383,10 +420,10 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
                     </Grid>
                 </Box>
             )}
-            {isAdmin && activeLotteryInfo && activeLotteryInfo.length > 0 && (
+            {isAdmin && displayedLotteryInfo && (
                 <Stack>
-                    <Button width={"full"} colorPalette={"blue"} size={"xl"} disabled={activeLotteryInfo[0].applied} onClick={() => {
-                        drawSeminarLottery({}, {
+                    <Button width={"full"} colorPalette={"blue"} size={"xl"} disabled={displayedLotteryInfo.applied} onClick={() => {
+                        drawSeminarLottery({ infoId: displayedLotteryInfo.id }, {
                             onSuccess: () => {
                                 toaster.success({
                                     title: "추첨 진행 완료",
@@ -403,11 +440,12 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
                             },
                         })
                     }}>
-                        추첨 진행하기
+                        {pendingLotteryInfo ? "최종 추첨 진행하기" : "추첨 진행하기"}
                     </Button>
+                    {pendingLotteryInfo && (
                     <AlertBtn
                         onClick={() => {
-                            applySeminarLottery({}, {
+                            applySeminarLottery({ infoId: pendingLotteryInfo.id }, {
                                 onSuccess: () => {
                                     toaster.success({
                                         title: "세미나 추첨 반영 완료",
@@ -433,10 +471,11 @@ export function TimeSelector({ orgId, spaceId, editable, isAdmin }: {
                             </Text>
                         </>)}
                     >
-                        <Button size={"xl"} colorPalette="red" disabled={activeLotteryInfo[0].applied}>
-                            {activeLotteryInfo[0].applied ? "이미 반영되었습니다" : "세미나실 정기예약 추첨 반영하기"}
+                        <Button size={"xl"} colorPalette="red" disabled={pendingLotteryInfo.applied}>
+                            {pendingLotteryInfo.applied ? "이미 반영되었습니다" : "세미나실 정기예약 추첨 반영하기"}
                         </Button>
                     </AlertBtn>
+                    )}
                 </Stack>
             )}
         </Stack>

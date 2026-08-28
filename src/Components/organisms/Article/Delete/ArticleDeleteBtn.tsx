@@ -11,7 +11,7 @@ export default function ArticleDeleteBtn({ id, refetch }: {
     id: number;
     refetch: () => void;
 }) {
-    const { deleteArticle } = useArticleAPI({ id });
+    const { deleteArticle } = useArticleAPI({ id, manage: true });
     const { linkPush } = useLinkPush();
 
     const [e, setE] = useState<string>("");

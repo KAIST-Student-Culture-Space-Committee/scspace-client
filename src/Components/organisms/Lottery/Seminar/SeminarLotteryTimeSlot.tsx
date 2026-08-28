@@ -16,6 +16,7 @@ interface TimeSlotProps {
     orgCount: number;
     drawnOrgName: string | null;
     isOrgRequested: boolean;
+    orgPriority?: number;
 }
 
 export function TimeSlot({
@@ -25,7 +26,8 @@ export function TimeSlot({
     isSelected,
     onSelect,
     orgCount,
-    isOrgRequested
+    isOrgRequested,
+    orgPriority,
 }: TimeSlotProps) {
     const [isHovered, setIsHovered] = useState(false);
 
@@ -93,11 +95,15 @@ export function TimeSlot({
                         <Text truncate maxW="100%" overflow={"hidden"}>
                             {drawnOrgName}
                         </Text>
+                    ) : (orgPriority ? (
+                        <Text>
+                            {orgPriority}지망
+                        </Text>
                     ) : (orgCount > 0 ? (
                         <Text>
                             {orgCount}
                         </Text>
-                    ) : null)}
+                    ) : null))}
                 </Flex>
             </Button>
         </GridItem>

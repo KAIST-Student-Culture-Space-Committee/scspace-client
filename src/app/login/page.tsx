@@ -1,5 +1,6 @@
 import PageTemplete from "@scspace-client/Components/molecules/page/PageTemplete";
 import SSOLogin from "@scspace-client/Components/pages/Login";
+import { Suspense } from "react";
 
 export default function LoginPage() {
   return (
@@ -7,8 +8,9 @@ export default function LoginPage() {
       title="개인정보처리방침"
       subtitle="Privacy Policy"
     >
-      <SSOLogin />
+      <Suspense fallback={null}>
+        <SSOLogin />
+      </Suspense>
     </PageTemplete>
   );
 }
-

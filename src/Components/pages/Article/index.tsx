@@ -97,6 +97,7 @@ export default function Article() {
                             <ArticleTable
                                 refetchTrigger={refetchCounter}
                                 query={{ type }}
+                                manage={isManager}
                             />
                         </Card.Body>
                     </Card.Root>

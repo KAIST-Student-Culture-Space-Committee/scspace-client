@@ -15,6 +15,7 @@ import Scroll from "@scspace-client/Components/molecules/page/Scroll";
 import { IRentalAll } from "@scspace-depot/types/rental";
 import RefetchBtn from "@scspace-client/Components/molecules/buttons/RefetchBtn";
 import RentalDialog from "./RentalDialog";
+import { RentalStatusEnum } from "@scspace-depot/enums/rental.enum";
 
 export default function RentalTable({
     disabled,
@@ -41,18 +42,20 @@ export default function RentalTable({
         ALL: "all",
         ON_RENT: "on rent",
         OVERDUE: "overdue",
-        RETURNED: "returned",
-        CONFIRMED: "confirmed"
+        CONTACTED: "contacted",
+        COMPLETED: "completed",
+        CANCELLED: "cancelled",
     };
 
     const [tab, setTab] = useState<string>(RENTAL_STATE.ALL);
 
-    const { getTime } = dateUtils();
-    const [now, setNow] = useState<number>(0);
+    const { getNow } = dateUtils();
+    const [now, setNow] = useState<number>(() => getNow());
 
     useEffect(() => {
-        setNow(getTime(new Date()));
-    }, []);
+        const timer = window.setInterval(() => setNow(getNow()), 60_000);
+        return () => window.clearInterval(timer);
+    }, [getNow]);
 
     return (
         <>
@@ -81,11 +84,14 @@ export default function RentalTable({
                                 <Tabs.Trigger value={RENTAL_STATE.OVERDUE}>
                                     Overdue
                                 </Tabs.Trigger>
-                                <Tabs.Trigger value={RENTAL_STATE.RETURNED}>
-                                    Returned
+                                <Tabs.Trigger value={RENTAL_STATE.CONTACTED}>
+                                    Contacted
                                 </Tabs.Trigger>
-                                <Tabs.Trigger value={RENTAL_STATE.CONFIRMED}>
-                                    Confirmed
+                                <Tabs.Trigger value={RENTAL_STATE.COMPLETED}>
+                                    Completed
+                                </Tabs.Trigger>
+                                <Tabs.Trigger value={RENTAL_STATE.CANCELLED}>
+                                    Cancelled
                                 </Tabs.Trigger>
                             </Tabs.List>
                         </Tabs.Root>
@@ -109,33 +115,43 @@ export default function RentalTable({
                             }
                         ) : (undefined)}
                         header={[
-                            "Goods Name",
-                            "Count",
-                            "Borrowed At",
-                            "Return Due"
+                            "Goods",
+                            "Borrower",
+                            "Return Due",
+                            "Status",
                         ]}
                         content={rentals
                             .filter(rental => {
                                 switch (tab) {
                                     case RENTAL_STATE.ALL:
                                         return true;
-                                    case RENTAL_STATE.CONFIRMED:
-                                        return rental.timeConfirm !== 0;
-                                    case RENTAL_STATE.RETURNED:
-                                        return (rental.timeReturn !== 0) && (rental.timeConfirm === 0);
+                                    case RENTAL_STATE.COMPLETED:
+                                        return rental.status === RentalStatusEnum.COMPLETED;
+                                    case RENTAL_STATE.CANCELLED:
+                                        return rental.status === RentalStatusEnum.CANCELLED;
+                                    case RENTAL_STATE.CONTACTED:
+                                        return rental.status === RentalStatusEnum.ACTIVE && rental.timeDue < now && rental.overdueContactedAt > 0;
                                     case RENTAL_STATE.OVERDUE:
-                                        return (rental.timeDue < now) && (rental.timeReturn === 0);
+                                        return rental.status === RentalStatusEnum.ACTIVE && rental.timeDue < now && rental.overdueContactedAt === 0;
                                     default:
-                                        return rental.timeReturn === 0;
+                                        return rental.status === RentalStatusEnum.ACTIVE && rental.timeDue >= now;
                                 }
                             })
                             .map((rental: IRentalAll) => ({
                                 id: rental.id,
                                 row: [
-                                    rental.goods.name,
-                                    rental.count,
-                                    getString(rental.timeBorrow),
-                                    getString(rental.timeDue)
+                                    `${rental.goods.name} x ${rental.count}`,
+                                    `${rental.user.nameKr} (${rental.user.studentNumber})`,
+                                    getString(rental.timeDue),
+                                    rental.status === RentalStatusEnum.COMPLETED
+                                        ? "정상 반납"
+                                        : rental.status === RentalStatusEnum.CANCELLED
+                                            ? "취소"
+                                            : rental.status === RentalStatusEnum.RETURNED
+                                                ? "반납 확인 대기"
+                                                : rental.timeDue < now
+                                                    ? rental.overdueContactedAt > 0 ? "연체 후 연락" : "연체"
+                                                    : "대여",
                                 ]
                             }))
                         }
