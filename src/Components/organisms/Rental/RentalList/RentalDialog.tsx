@@ -37,14 +37,15 @@ const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
 
 type RentalEditState = {
     user: IUser;
+    organizationId: number;
     goodsId: number;
     count: number;
     timeDue: string;
-    groupName: string;
-    contact: string;
-    emergencyContact: string;
-    usingLocation: string;
-    usingPurpose: string;
+    phoneNumber: string;
+    emergencyContactPresident: string;
+    emergencyContactVicePresident: string;
+    reasonLocation: string;
+    reasonPurpose: string;
 };
 
 function toLocalInput(time: number): string {
@@ -87,14 +88,15 @@ export default function RentalDialog({ open, setOpen, rental, refetchList }: {
         }
         setEdit({
             user: rental.user,
+            organizationId: rental.organizationId,
             goodsId: rental.goodsId,
             count: rental.count,
             timeDue: toLocalInput(rental.timeDue),
-            groupName: rental.groupName ?? "",
-            contact: rental.contact ?? "",
-            emergencyContact: rental.emergencyContact ?? "",
-            usingLocation: rental.usingLocation ?? "",
-            usingPurpose: rental.usingPurpose ?? "",
+            phoneNumber: rental.phoneNumber ?? "",
+            emergencyContactPresident: rental.emergencyContactPresident ?? "",
+            emergencyContactVicePresident: rental.emergencyContactVicePresident ?? "",
+            reasonLocation: rental.reasonLocation ?? "",
+            reasonPurpose: rental.reasonPurpose ?? "",
         });
     }, [rental]);
 
@@ -121,6 +123,7 @@ export default function RentalDialog({ open, setOpen, rental, refetchList }: {
         const due = Temporal.PlainDateTime.from(edit.timeDue);
         await updateRental.mutateAsync({
             userId: edit.user.id,
+            organizationId: edit.organizationId,
             goodsId: edit.goodsId,
             count: edit.count,
             timeDue: getTime({
@@ -130,11 +133,11 @@ export default function RentalDialog({ open, setOpen, rental, refetchList }: {
                 hour: due.hour,
                 minute: due.minute,
             }),
-            groupName: edit.groupName,
-            contact: edit.contact,
-            emergencyContact: edit.emergencyContact,
-            usingLocation: edit.usingLocation,
-            usingPurpose: edit.usingPurpose,
+            phoneNumber: edit.phoneNumber,
+            emergencyContactPresident: edit.emergencyContactPresident,
+            emergencyContactVicePresident: edit.emergencyContactVicePresident,
+            reasonLocation: edit.reasonLocation,
+            reasonPurpose: edit.reasonPurpose,
         });
         await refresh();
     }
@@ -184,11 +187,12 @@ export default function RentalDialog({ open, setOpen, rental, refetchList }: {
                         </select>
                         <Input type="number" min={1} value={edit.count} onChange={(event) => setEdit({ ...edit, count: Number(event.target.value) })} />
                         <Input type="datetime-local" value={edit.timeDue} onChange={(event) => setEdit({ ...edit, timeDue: event.target.value })} />
-                        <Input placeholder="단체" value={edit.groupName} onChange={(event) => setEdit({ ...edit, groupName: event.target.value })} />
-                        <Input placeholder="연락처" value={edit.contact} onChange={(event) => setEdit({ ...edit, contact: event.target.value })} />
-                        <Input placeholder="비상연락처" value={edit.emergencyContact} onChange={(event) => setEdit({ ...edit, emergencyContact: event.target.value })} />
-                        <Input placeholder="사용 위치" value={edit.usingLocation} onChange={(event) => setEdit({ ...edit, usingLocation: event.target.value })} />
-                        <Textarea placeholder="사용 사유" value={edit.usingPurpose} onChange={(event) => setEdit({ ...edit, usingPurpose: event.target.value })} />
+                        <Input placeholder="조직 ID" type="number" value={edit.organizationId} onChange={(event) => setEdit({ ...edit, organizationId: Number(event.target.value) })} />
+                        <Input placeholder="연락처" value={edit.phoneNumber} onChange={(event) => setEdit({ ...edit, phoneNumber: event.target.value })} />
+                        <Input placeholder="회장 비상연락처" value={edit.emergencyContactPresident} onChange={(event) => setEdit({ ...edit, emergencyContactPresident: event.target.value })} />
+                        <Input placeholder="부회장 비상연락처" value={edit.emergencyContactVicePresident} onChange={(event) => setEdit({ ...edit, emergencyContactVicePresident: event.target.value })} />
+                        <Input placeholder="사용 위치" value={edit.reasonLocation} onChange={(event) => setEdit({ ...edit, reasonLocation: event.target.value })} />
+                        <Textarea placeholder="사용 사유" value={edit.reasonPurpose} onChange={(event) => setEdit({ ...edit, reasonPurpose: event.target.value })} />
                         <HStack justify="end">
                             <Button variant="outline" onClick={() => setMode("view")}>취소</Button>
                             <Button colorPalette="blue" onClick={() => void saveEdit()} loading={updateRental.isPending}>저장</Button>
@@ -217,13 +221,14 @@ export default function RentalDialog({ open, setOpen, rental, refetchList }: {
                         <DataListItem label="대여 시각">{getString(rental.timeBorrow)}</DataListItem>
                         <DataListItem label="반납 기한">{getString(rental.timeDue)}</DataListItem>
                         <DataListItem label="반납 시각">{rental.timeReturn ? getString(rental.timeReturn) : "-"}</DataListItem>
-                        <DataListItem label="단체">{rental.groupName || "-"}</DataListItem>
-                        <DataListItem label="연락처">{rental.contact || "-"}</DataListItem>
-                        <DataListItem label="비상연락처">{rental.emergencyContact || "-"}</DataListItem>
-                        <DataListItem label="사용 위치">{rental.usingLocation || "-"}</DataListItem>
-                        <DataListItem label="사용 사유">{rental.usingPurpose || "-"}</DataListItem>
-                        <DataListItem label="대여 승인자">{rental.approver?.nameKr ?? "기록 없음"}</DataListItem>
-                        <DataListItem label="반납 승인자">{rental.returnApprover?.nameKr ?? "-"}</DataListItem>
+                        <DataListItem label="단체">{rental.organization.name}</DataListItem>
+                        <DataListItem label="연락처">{rental.phoneNumber || "-"}</DataListItem>
+                        <DataListItem label="회장 비상연락처">{rental.emergencyContactPresident || "-"}</DataListItem>
+                        <DataListItem label="부회장 비상연락처">{rental.emergencyContactVicePresident || "-"}</DataListItem>
+                        <DataListItem label="사용 위치">{rental.reasonLocation || "-"}</DataListItem>
+                        <DataListItem label="사용 사유">{rental.reasonPurpose || "-"}</DataListItem>
+                        <DataListItem label="대여 승인자">{rental.rentalWorker?.nameKr ?? "기록 없음"}</DataListItem>
+                        <DataListItem label="반납 승인자">{rental.returnWorker?.nameKr ?? "-"}</DataListItem>
                         <DataListItem label="연체 연락">{rental.overdueContactedAt ? `${getString(rental.overdueContactedAt)} · ${rental.overdueContactedBy?.nameKr ?? "담당자 기록 없음"}` : "-"}</DataListItem>
                     </DataList.Root>
                 )}

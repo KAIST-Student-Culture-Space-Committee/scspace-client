@@ -26,16 +26,18 @@ import LoadingComponent from "@scspace-client/Components/atoms/Loading";
 import { Temporal } from "@js-temporal/polyfill";
 import { dateUtils } from "@scspace-client/Hooks/utils";
 import { RENTAL_DUTY_HOURS_KO } from "@scspace-depot/consts/rental.const";
+import { AllOrganizationForm } from "@scspace-client/Components/organisms/Reservation/Forms/OrganizationAll";
 
 interface RentalFormData {
     user: IUser | null;
     goods: IGoods | null;
     count: number;
-    groupName: string;
-    contact: string;
-    emergencyContact: string;
-    usingLocation: string;
-    usingPurpose: string;
+    organizationId: number;
+    phoneNumber: string;
+    emergencyContactPresident: string;
+    emergencyContactVicePresident: string;
+    reasonLocation: string;
+    reasonPurpose: string;
     timeDue: string;
 }
 
@@ -53,11 +55,12 @@ export default function RentalWizard() {
         user: null,
         goods: null,
         count: 1,
-        groupName: "",
-        contact: "",
-        emergencyContact: "",
-        usingLocation: "",
-        usingPurpose: "",
+        organizationId: 0,
+        phoneNumber: "",
+        emergencyContactPresident: "",
+        emergencyContactVicePresident: "",
+        reasonLocation: "",
+        reasonPurpose: "",
         timeDue: getDefaultDueTime(),
     });
 
@@ -76,11 +79,12 @@ export default function RentalWizard() {
         formData.count <= formData.goods.countNow,
     );
     const detailsAreValid = Boolean(
-        formData.groupName.trim() &&
-        formData.contact.trim() &&
-        formData.emergencyContact.trim() &&
-        formData.usingLocation.trim() &&
-        formData.usingPurpose.trim() &&
+        formData.organizationId > 0 &&
+        formData.phoneNumber.trim() &&
+        formData.emergencyContactPresident.trim() &&
+        formData.emergencyContactVicePresident.trim() &&
+        formData.reasonLocation.trim() &&
+        formData.reasonPurpose.trim() &&
         formData.timeDue,
     );
 
@@ -119,11 +123,12 @@ export default function RentalWizard() {
                 goodsId: formData.goods.id,
                 count: formData.count,
                 timeDue,
-                groupName: formData.groupName || "",
-                contact: formData.contact || "",
-                emergencyContact: formData.emergencyContact || "",
-                usingLocation: formData.usingLocation || "",
-                usingPurpose: formData.usingPurpose || "",
+                organizationId: formData.organizationId,
+                phoneNumber: formData.phoneNumber,
+                emergencyContactPresident: formData.emergencyContactPresident,
+                emergencyContactVicePresident: formData.emergencyContactVicePresident,
+                reasonLocation: formData.reasonLocation,
+                reasonPurpose: formData.reasonPurpose,
             };
 
             await createRentalMutation.mutateAsync(payload);
@@ -132,11 +137,12 @@ export default function RentalWizard() {
                 user: null,
                 goods: null,
                 count: 1,
-                groupName: "",
-                contact: "",
-                emergencyContact: "",
-                usingLocation: "",
-                usingPurpose: "",
+                organizationId: 0,
+                phoneNumber: "",
+                emergencyContactPresident: "",
+                emergencyContactVicePresident: "",
+                reasonLocation: "",
+                reasonPurpose: "",
                 timeDue: getDefaultDueTime(),
             });
             setStep(0);
@@ -301,20 +307,11 @@ export default function RentalWizard() {
                             </FieldComponent>
                             <FieldComponent
                                 options={{
-                                    label: "Group Name",
+                                    label: "Organization",
                                     required: true,
                                 }}
                             >
-                                <Input
-                                    value={formData.groupName}
-                                    onChange={(e) =>
-                                        setFormData((prev) => ({
-                                            ...prev,
-                                            groupName: e.target.value,
-                                        }))
-                                    }
-                                    placeholder="Organization or group name"
-                                />
+                                <AllOrganizationForm setOrgId={(value) => setFormData((prev) => ({ ...prev, organizationId: typeof value === "function" ? value(prev.organizationId) : value }))} />
                             </FieldComponent>
                             <FieldComponent
                                 options={{
@@ -323,11 +320,11 @@ export default function RentalWizard() {
                                 }}
                             >
                                 <Input
-                                    value={formData.contact}
+                                    value={formData.phoneNumber}
                                     onChange={(e) =>
                                         setFormData((prev) => ({
                                             ...prev,
-                                            contact: e.target.value,
+                                            phoneNumber: e.target.value,
                                         }))
                                     }
                                     placeholder="Phone number or email"
@@ -340,14 +337,21 @@ export default function RentalWizard() {
                                 }}
                             >
                                 <Input
-                                    value={formData.emergencyContact}
+                                    value={formData.emergencyContactPresident}
                                     onChange={(e) =>
                                         setFormData((prev) => ({
                                             ...prev,
-                                            emergencyContact: e.target.value,
+                                            emergencyContactPresident: e.target.value,
                                         }))
                                     }
-                                    placeholder="Emergency contact number"
+                                    placeholder="President emergency contact"
+                                />
+                            </FieldComponent>
+                            <FieldComponent options={{ label: "Vice President Emergency Contact", required: true }}>
+                                <Input
+                                    value={formData.emergencyContactVicePresident}
+                                    onChange={(e) => setFormData((prev) => ({ ...prev, emergencyContactVicePresident: e.target.value }))}
+                                    placeholder="Vice president emergency contact"
                                 />
                             </FieldComponent>
                             <FieldComponent
@@ -357,11 +361,11 @@ export default function RentalWizard() {
                                 }}
                             >
                                 <Input
-                                    value={formData.usingLocation}
+                                    value={formData.reasonLocation}
                                     onChange={(e) =>
                                         setFormData((prev) => ({
                                             ...prev,
-                                            usingLocation: e.target.value,
+                                            reasonLocation: e.target.value,
                                         }))
                                     }
                                     placeholder="Where will the goods be used?"
@@ -374,11 +378,11 @@ export default function RentalWizard() {
                                 }}
                             >
                                 <Textarea
-                                    value={formData.usingPurpose}
+                                    value={formData.reasonPurpose}
                                     onChange={(e) =>
                                         setFormData((prev) => ({
                                             ...prev,
-                                            usingPurpose: e.target.value,
+                                            reasonPurpose: e.target.value,
                                         }))
                                     }
                                     placeholder="Purpose of rental"
@@ -425,20 +429,23 @@ export default function RentalWizard() {
                                     {formData.timeDue.replace("T", " ")}
                                 </DataListItem>
                                 <Separator />
-                                <DataListItem label="Group Name">
-                                    {formData.groupName || "N/A"}
+                                <DataListItem label="Organization ID">
+                                    {formData.organizationId || "N/A"}
                                 </DataListItem>
                                 <DataListItem label="Contact">
-                                    {formData.contact || "N/A"}
+                                    {formData.phoneNumber || "N/A"}
                                 </DataListItem>
-                                <DataListItem label="Emergency Contact">
-                                    {formData.emergencyContact || "N/A"}
+                                <DataListItem label="President Emergency Contact">
+                                    {formData.emergencyContactPresident || "N/A"}
+                                </DataListItem>
+                                <DataListItem label="Vice President Emergency Contact">
+                                    {formData.emergencyContactVicePresident || "N/A"}
                                 </DataListItem>
                                 <DataListItem label="Using Location">
-                                    {formData.usingLocation || "N/A"}
+                                    {formData.reasonLocation || "N/A"}
                                 </DataListItem>
                                 <DataListItem label="Using Purpose">
-                                    {formData.usingPurpose || "N/A"}
+                                    {formData.reasonPurpose || "N/A"}
                                 </DataListItem>
                             </DataList.Root>
                             <HStack justify="space-between">
