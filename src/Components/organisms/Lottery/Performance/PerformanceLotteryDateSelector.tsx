@@ -112,6 +112,10 @@ export function DateSelector({
   const [selectedDate, setSelectedDate] = useState<number>(-1);
   const [selectedDateString, setSelectedDateString] = useState<string>("");
   useEffect(() => {
+    if (startTime <= 0 || selectedDate < 0) {
+      setSelectedDateString("");
+      return;
+    }
     setSelectedDateString(getDateString(addDays(startTime, selectedDate)));
   }, [selectedDate, startTime, addDays, getDateString]);
 
