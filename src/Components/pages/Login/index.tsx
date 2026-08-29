@@ -96,7 +96,7 @@ export default function SSOLogin() {
                                     <Image
                                         fill
                                         style={{ objectFit: "cover" }}
-                                        src="/img/testimonials-bg.jpg"
+                                        src="/img/spaces/Mirae-Hall.jpg"
                                         alt="Business"
                                     />
                                 </Box>
