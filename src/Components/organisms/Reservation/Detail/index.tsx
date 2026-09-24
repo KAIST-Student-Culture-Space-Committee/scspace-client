@@ -140,7 +140,7 @@ export default function ReservationDetail({ open, setOpen, selectedRes, refetch 
                                             {selectedRes.content.busking ? "Yes" : "No"}
                                         </DataListItem>
                                     )}
-                                    {(selectedRes.space.spaceType === SpaceTypeEnum.SUMI || selectedRes.space.spaceType === SpaceTypeEnum.MIRAE) && (
+                                    {selectedRes.space.spaceType === SpaceTypeEnum.MIRAE && (
                                         <DataListItem label="Performance">
                                             {selectedRes.content.performance ? "Yes" : "No"}
                                         </DataListItem>

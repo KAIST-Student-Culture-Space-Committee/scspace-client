@@ -76,7 +76,7 @@ export default function CreateReservation() {
 
   const [open, setOpen] = useState<boolean>(false);
 
-  const isPerformanceSpace = spaceId === 10 || spaceId === 11;
+  const isPerformanceSpace = spaceId === 10;
 
   function submit() {
     if (title === "") {

@@ -69,7 +69,7 @@ export default function ReservationApplication() {
 
   const { getTime } = dateUtils();
 
-  const isPerformanceSpace = spaceId === 10 || spaceId === 11;
+  const isPerformanceSpace = spaceId === 10;
 
   function submit() {
     if (title === "") {
