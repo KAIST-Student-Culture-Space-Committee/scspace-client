@@ -19,6 +19,7 @@ import {
   DeskForm,
   ChairForm,
   WorkerForm,
+  PerformanceForm,
   AllOrganizationForm,
 } from "@scspace-client/Components/organisms/Reservation/Forms/index";
 import Scroll from "@scspace-client/Components/molecules/page/Scroll";
@@ -30,6 +31,8 @@ import ReservationCard, { IReservationRepeat } from "./ReservationCard";
 import { RepeatForm } from "./Repeat";
 import SubmitLog from "./SubmitLog";
 import { IReservationMultipleCreateResurt } from "@scspace-depot/types/reservation";
+import { DutyUtils } from "@scspace-depot/utils/duty.utils";
+import DutyNoticeDialog from "../DutyNoticeDialog";
 
 export default function CreateReservation() {
   const { userInfo, needManager } = useAuth();
@@ -46,6 +49,8 @@ export default function CreateReservation() {
   const [food, setFood] = useState<string>("");
   const [worker, setWorker] = useState<boolean>(false);
   const [check, setCheck] = useState<boolean>(false);
+  const [performance, setPerformance] = useState<boolean | null>(null);
+  const [dutyNoticeOpen, setDutyNoticeOpen] = useState<boolean>(false);
 
   const createMultiReservation = useReservationAPI().createMultipleRes;
 
@@ -71,6 +76,8 @@ export default function CreateReservation() {
 
   const [open, setOpen] = useState<boolean>(false);
 
+  const isPerformanceSpace = spaceId === 10 || spaceId === 11;
+
   function submit() {
     if (title === "") {
       toaster.warning({
@@ -88,10 +95,29 @@ export default function CreateReservation() {
       return;
     }
 
+    if (isPerformanceSpace && performance === null) {
+      toaster.warning({
+        title: "Reservate Failed",
+        description: "Please select whether this is a performance",
+      });
+      return;
+    }
+
     if (!userInfo) return;
 
-    setSubmitLog(null);
+    const time = getTimeList();
+    if (
+      !(isPerformanceSpace && performance) &&
+      time.some(t => DutyUtils.overlapsDutyHours(t.timeFrom, t.timeTo))
+    ) {
+      setDutyNoticeOpen(true);
+      return;
+    }
 
+    send(time);
+  }
+
+  function getTimeList() {
     var i: number;
     var _timeFrom: Date;
     var _timeTo: Date;
@@ -121,6 +147,14 @@ export default function CreateReservation() {
       }
     });
 
+    return time;
+  }
+
+  function send(time: { timeFrom: number; timeTo: number }[]) {
+    if (!userInfo) return;
+
+    setSubmitLog(null);
+
     createMultiReservation(
       {
         content: {
@@ -130,6 +164,7 @@ export default function CreateReservation() {
           food: food,
           busking: check && spaceId === 13,
           workerNeed: worker,
+          performance: isPerformanceSpace && performance === true,
         },
         userId: userInfo.id,
         // userId: 1,
@@ -157,6 +192,12 @@ export default function CreateReservation() {
 
   return (
     <Scroll>
+      <DutyNoticeDialog
+        open={dutyNoticeOpen}
+        setOpen={setDutyNoticeOpen}
+        onConfirm={() => send(getTimeList())}
+        showPerformanceHint={isPerformanceSpace}
+      />
       {submitLog && (
         <SubmitLog submitLog={submitLog} open={open} setOpen={setOpen} />
       )}
@@ -171,6 +212,11 @@ export default function CreateReservation() {
           <GridItem colSpan={{ base: 6, md: 3 }}>
             <AllOrganizationForm setOrgId={setOrgId} />
           </GridItem>
+          {isPerformanceSpace && (
+            <GridItem colSpan={6}>
+              <PerformanceForm value={performance} setValue={setPerformance} />
+            </GridItem>
+          )}
           <GridItem colSpan={6}>
             <ReservationCard resList={resList} setResList={setResList} />
           </GridItem>

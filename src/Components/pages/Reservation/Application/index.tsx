@@ -19,6 +19,7 @@ import {
   DeskForm,
   ChairForm,
   WorkerForm,
+  PerformanceForm,
   DateForm,
   HourForm
 } from "@scspace-client/Components/organisms/Reservation/Forms/index";
@@ -31,6 +32,8 @@ import { toaster } from "@scspace-client/Components/atoms/Toaster";
 import { dateUtils } from "@scspace-client/Hooks/utils";
 import InputComponent from "@scspace-client/Components/molecules/forms/Input";
 import { IndividualOrganizationId } from "@scspace-depot/consts/organization.const";
+import { DutyUtils } from "@scspace-depot/utils/duty.utils";
+import DutyNoticeDialog from "@scspace-client/Components/organisms/Reservation/DutyNoticeDialog";
 
 export default function ReservationApplication() {
   const { userInfo, needLogin } = useAuth();
@@ -57,12 +60,16 @@ export default function ReservationApplication() {
   const [worker, setWorker] = useState<boolean>(false);
   const [check, setCheck] = useState<boolean>(false);
   const [workerNeedReason, setWorkerNeedReason] = useState<string>("");
+  const [performance, setPerformance] = useState<boolean | null>(null);
+  const [dutyNoticeOpen, setDutyNoticeOpen] = useState<boolean>(false);
 
   const createReservation = useReservationAPI().createRes;
 
   const [e, setE] = useState<string | null>(null);
 
   const { getTime } = dateUtils();
+
+  const isPerformanceSpace = spaceId === 10 || spaceId === 11;
 
   function submit() {
     if (title === "") {
@@ -81,6 +88,33 @@ export default function ReservationApplication() {
       return;
     }
 
+    if (isPerformanceSpace && performance === null) {
+      toaster.warning({
+        title: "Reservate Failed",
+        description: "Please select whether this is a performance"
+      });
+      return;
+    }
+
+    if (!userInfo) return;
+
+    if (!(isPerformanceSpace && performance) && DutyUtils.overlapsDutyHours(getTimeFrom(), getTimeTo())) {
+      setDutyNoticeOpen(true);
+      return;
+    }
+
+    send();
+  }
+
+  function getTimeFrom() {
+    return getTime(dateFrom) + getTime({ hour: hourFrom });
+  }
+
+  function getTimeTo() {
+    return getTime(dateTo) + getTime({ hour: hourTo });
+  }
+
+  function send() {
     if (!userInfo) return;
 
     toaster.promise(
@@ -96,13 +130,14 @@ export default function ReservationApplication() {
             workerNeedReason: worker && (spaceId === 10 || spaceId === 11)
               ? workerNeedReason
               : undefined,
+            performance: isPerformanceSpace && performance === true,
           },
           userId: userInfo.id,
           organizationId: orgId,
           spaceId: spaceId,
           title: title,
-          timeFrom: getTime(dateFrom) + getTime({ hour: hourFrom }),
-          timeTo: getTime(dateTo) + getTime({ hour: hourTo }),
+          timeFrom: getTimeFrom(),
+          timeTo: getTimeTo(),
         },
         {
           onSuccess: () => {
@@ -134,6 +169,12 @@ export default function ReservationApplication() {
 
   return (
     <Scroll>
+      <DutyNoticeDialog
+        open={dutyNoticeOpen}
+        setOpen={setDutyNoticeOpen}
+        onConfirm={send}
+        showPerformanceHint={isPerformanceSpace}
+      />
       <Stack>
         <Text color="fg.subtle">
           {'Before making a reservation, please register your organization under "My Page > Organization."'}
@@ -159,6 +200,14 @@ export default function ReservationApplication() {
               <SmallLoading />
             )}
           </GridItem>
+          {isPerformanceSpace && (
+            <GridItem colSpan={6}>
+              <PerformanceForm
+                value={performance}
+                setValue={setPerformance}
+              />
+            </GridItem>
+          )}
           <GridItem colSpan={{ base: 6, md: 3 }}>
             <DateForm
               label="start date"
