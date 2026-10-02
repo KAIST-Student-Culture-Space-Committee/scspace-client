@@ -6,6 +6,7 @@ import {
   Separator,
   Grid, GridItem,
   Button,
+  Checkbox,
   Text,
 } from "@chakra-ui/react";
 import {
@@ -32,8 +33,6 @@ import { toaster } from "@scspace-client/Components/atoms/Toaster";
 import { dateUtils } from "@scspace-client/Hooks/utils";
 import InputComponent from "@scspace-client/Components/molecules/forms/Input";
 import { IndividualOrganizationId } from "@scspace-depot/consts/organization.const";
-import { DutyUtils } from "@scspace-depot/utils/duty.utils";
-import DutyNoticeDialog from "@scspace-client/Components/organisms/Reservation/DutyNoticeDialog";
 
 export default function ReservationApplication() {
   const { userInfo, needLogin } = useAuth();
@@ -61,7 +60,9 @@ export default function ReservationApplication() {
   const [check, setCheck] = useState<boolean>(false);
   const [workerNeedReason, setWorkerNeedReason] = useState<string>("");
   const [performance, setPerformance] = useState<boolean | null>(null);
-  const [dutyNoticeOpen, setDutyNoticeOpen] = useState<boolean>(false);
+  const [reservationTypeConfirmed, setReservationTypeConfirmed] = useState(false);
+  const [dutyAccessConfirmed, setDutyAccessConfirmed] = useState(false);
+  const [photoUploadConfirmed, setPhotoUploadConfirmed] = useState(false);
 
   const createReservation = useReservationAPI().createRes;
 
@@ -70,8 +71,13 @@ export default function ReservationApplication() {
   const { getTime } = dateUtils();
 
   const isPerformanceSpace = spaceId === 10;
+  const isIndividualReservation = orgId === IndividualOrganizationId;
+  const allConfirmationsChecked =
+    reservationTypeConfirmed && dutyAccessConfirmed && photoUploadConfirmed;
 
   function submit() {
+    if (!allConfirmationsChecked) return;
+
     if (title === "") {
       toaster.warning({
         title: "Reservate Failed",
@@ -97,11 +103,6 @@ export default function ReservationApplication() {
     }
 
     if (!userInfo) return;
-
-    if (!(isPerformanceSpace && performance) && DutyUtils.overlapsDutyHours(getTimeFrom(), getTimeTo())) {
-      setDutyNoticeOpen(true);
-      return;
-    }
 
     send();
   }
@@ -169,12 +170,6 @@ export default function ReservationApplication() {
 
   return (
     <Scroll>
-      <DutyNoticeDialog
-        open={dutyNoticeOpen}
-        setOpen={setDutyNoticeOpen}
-        onConfirm={send}
-        showPerformanceHint={isPerformanceSpace}
-      />
       <Stack>
         <Text color="fg.subtle">
           {'Before making a reservation, please register your organization under "My Page > Organization."'}
@@ -194,7 +189,10 @@ export default function ReservationApplication() {
             {userInfo ? (
               <OrganizationForm
                 id={userInfo.id}
-                setOrgId={setOrgId}
+                setOrgId={(value) => {
+                  setOrgId(value);
+                  setReservationTypeConfirmed(false);
+                }}
               />
             ) : (
               <SmallLoading />
@@ -305,7 +303,49 @@ export default function ReservationApplication() {
           )}
         </Grid>
         <Separator />
-        <Button rounded="sm" width="100%" onClick={submit}>
+        <Stack gap={3} py={2}>
+          <Checkbox.Root
+            checked={reservationTypeConfirmed}
+            onCheckedChange={(e) => setReservationTypeConfirmed(!!e.checked)}
+          >
+            <Checkbox.HiddenInput />
+            <Checkbox.Control />
+            <Checkbox.Label>
+              예약 주체가 {isIndividualReservation ? "개인 예약" : "조직 예약"}으로 올바르게 선택되었는지 확인했습니다.
+            </Checkbox.Label>
+          </Checkbox.Root>
+          <Checkbox.Root
+            checked={dutyAccessConfirmed}
+            onCheckedChange={(e) => setDutyAccessConfirmed(!!e.checked)}
+          >
+            <Checkbox.HiddenInput />
+            <Checkbox.Control />
+            <Checkbox.Label>
+              <Text as="span" display="block">
+                상근시간 중에는 공간위원이 공간에 출입할 수 있음을 확인했습니다.
+              </Text>
+              <Text as="span" display="block" color="fg.muted" fontSize="sm">
+                상근시간: 월~수요일 19:00~21:00, 목요일 21:00~23:00
+              </Text>
+            </Checkbox.Label>
+          </Checkbox.Root>
+          <Checkbox.Root
+            checked={photoUploadConfirmed}
+            onCheckedChange={(e) => setPhotoUploadConfirmed(!!e.checked)}
+          >
+            <Checkbox.HiddenInput />
+            <Checkbox.Control />
+            <Checkbox.Label>
+              공간 이용 전·후 사진을 촬영하여 구글 폼에 업로드하겠습니다.
+            </Checkbox.Label>
+          </Checkbox.Root>
+        </Stack>
+        <Button
+          rounded="sm"
+          width="100%"
+          disabled={!allConfirmationsChecked}
+          onClick={submit}
+        >
           Submit
         </Button>
       </Stack >

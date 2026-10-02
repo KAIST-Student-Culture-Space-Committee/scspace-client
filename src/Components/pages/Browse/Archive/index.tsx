@@ -8,6 +8,36 @@ export default function Archive() {
             <Stack justify={"flex-start"} maxW={"calc(100% - 4px)"} mx={"auto"}>
                 <Separator />
                 <Heading>
+                    Constitution
+                </Heading>
+                <DataList.Root
+                    variant={"bold"}
+                >
+                    <DataListItem
+                        label={
+                            <Text>
+                                <Mark>학생문화공간위원회 회칙</Mark> <Mark color="fg.muted">Constitution of Student Culture &amp; Space Committee</Mark>
+                            </Text>
+                        }
+                    >
+                        <Link
+                            href="https://docs.google.com/document/d/1XQLTECnBtlP5dugTpfSBmLnH2WhWLEOI_vwXuxatUs8/edit?usp=sharing"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            w={"full"}
+                        >
+                            <Button
+                                variant="outline"
+                                w={"full"}
+                                colorPalette={"blue"}
+                            >
+                                open Google Docs
+                            </Button>
+                        </Link>
+                    </DataListItem>
+                </DataList.Root>
+                <Separator />
+                <Heading>
                     Forms
                 </Heading>
                 <DataList.Root
