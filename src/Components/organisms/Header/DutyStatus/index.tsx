@@ -19,11 +19,12 @@ export default function DutyStatusHeader() {
         return () => clearInterval(timer);
     }, []);
 
-    const dutyWindow = DutyUtils.getDutyWindows(now, now + 1)[0];
+    const DUTY_MARGIN = 60;
+    const dutyWindow = DutyUtils.getDutyWindows(now - DUTY_MARGIN, now + DUTY_MARGIN + 1)[0];
 
     const { data, refetch } = useQueryApi<IReservationAll[]>(
         isManager && dutyWindow ? "/reservation/duty" : "",
-        dutyWindow ? { timeFrom: dutyWindow.timeFrom, timeTo: dutyWindow.timeTo } : undefined,
+        dutyWindow ? { timeFrom: dutyWindow.timeFrom - DUTY_MARGIN, timeTo: dutyWindow.timeTo + DUTY_MARGIN } : undefined,
     );
 
     if (!isManager || !dutyWindow || !spaces) return null;
@@ -45,7 +46,7 @@ export default function DutyStatusHeader() {
                     colorPalette={"blue"}
                     onClick={() => refetch()}
                 >
-                    상근 예약현황
+                    Reservation Status
                 </Button>
             </Dialog.Trigger>
             <Dialog.Backdrop />
@@ -54,7 +55,7 @@ export default function DutyStatusHeader() {
                     <Dialog.Header>
                         <Flex justify={"space-between"} w={"full"}>
                             <Dialog.Title>
-                                상근 예약현황
+                                Reservation Status
                             </Dialog.Title>
                             <Dialog.ActionTrigger asChild>
                                 <CloseButton size={"xs"} variant={"outline"} />
