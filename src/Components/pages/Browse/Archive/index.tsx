@@ -8,6 +8,59 @@ export default function Archive() {
             <Stack justify={"flex-start"} maxW={"calc(100% - 4px)"} mx={"auto"}>
                 <Separator />
                 <Heading>
+                    Forms
+                </Heading>
+                <DataList.Root
+                    variant={"bold"}
+                >
+                    <DataListItem
+                        label={
+                            <Text>
+                                <Mark>공간 사용 전/후 사진 제출 구글폼</Mark> <Mark color="fg.muted">Space Usage Before/After Photo Submission Form</Mark>
+                            </Text>
+                        }
+                    >
+                        <Link
+                            href="https://docs.google.com/forms/d/e/1FAIpQLScbSQ3ZFUj8ZT7Lfc_tbBct6e4seMiGfZLriUzf0KIZ1f990g/viewform?usp=header"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            w={"full"}
+                        >
+                            <Button
+                                variant="outline"
+                                w={"full"}
+                                colorPalette={"blue"}
+                            >
+                                Open Google Form
+                            </Button>
+                        </Link>
+                    </DataListItem>
+
+                    <DataListItem
+                        label={
+                            <Text>
+                                <Mark>소음 발생 양해서</Mark> <Mark color="fg.muted">Noise Emission Estimate</Mark>
+                            </Text>
+                        }
+                    >
+                        <Link
+                            href="/forms/소음 발생 양해서 (Noise Emission Estimate).pdf"
+                            download
+                            w={"full"}
+                        >
+                            <Button
+                                variant="outline"
+                                w={"full"}
+                                colorPalette={"blue"}
+                            >
+                                Download File
+                            </Button>
+                        </Link>
+                    </DataListItem>
+                </DataList.Root>
+                <Separator />
+
+                <Heading>
                     Constitution
                 </Heading>
                 <DataList.Root
@@ -31,41 +84,13 @@ export default function Archive() {
                                 w={"full"}
                                 colorPalette={"blue"}
                             >
-                                open Google Docs
+                                Open Google Docs
                             </Button>
                         </Link>
                     </DataListItem>
                 </DataList.Root>
                 <Separator />
-                <Heading>
-                    Forms
-                </Heading>
-                <DataList.Root
-                    variant={"bold"}
-                >
-                    <DataListItem
-                        label={
-                            <Text>
-                                <Mark>소음 발생 양해서</Mark> <Mark color="fg.muted">noise emission estimate</Mark>
-                            </Text>
-                        }
-                    >
-                        <Link
-                            href="/forms/소음 발생 양해서 (noise emission estimate).pdf"
-                            download
-                            w={"full"}
-                        >
-                            <Button
-                                variant="outline"
-                                w={"full"}
-                                colorPalette={"blue"}
-                            >
-                                downloads file
-                            </Button>
-                        </Link>
-                    </DataListItem>
-                </DataList.Root>
-                <Separator />
+
                 <Heading>
                     Manuals
                 </Heading>
@@ -75,7 +100,7 @@ export default function Archive() {
                     <DataListItem
                         label={
                             <Text color={"blue"}>
-                                <Mark color={"black"}>미래홀 사용 설명서</Mark> <Mark color="fg.muted">Manual for Mirae-Hall</Mark> <br />*아직 완벽하지 않아서 부족한 부분이 보일 수 있는데 그런 부분은 공유해드린 구글 독스 파일에 댓글로 남겨주시면 반영하여 수정, 추가하겠습니다!
+                                <Mark color={"black"}>미래홀 사용 설명서</Mark> <Mark color="fg.muted">Manual for Mirae-Hall</Mark> <br />* 설명이 부족한 부분은 공유해드린 구글 독스 파일에 댓글로 남겨주시면 반영하여 수정, 추가하겠습니다!
                             </Text>
                         }
                     >
@@ -90,14 +115,14 @@ export default function Archive() {
                                 w={"full"}
                                 colorPalette={"blue"}
                             >
-                                open Google Docs
+                                Open Google Docs
                             </Button>
                         </Link>
                     </DataListItem>
                     <DataListItem
                         label={
                             <Text maxW={"full"} wordBreak={"break-word"} color={"blue"}>
-                                <Mark color="black">조수미홀 사용 설명서</Mark> <Mark color="fg.muted">Manual for Josumi-Hall</Mark> <br />*아직 완벽하지 않아서 부족한 부분이 보일 수 있는데 그런 부분은 공유해드린 구글 독스 파일에 댓글로 남겨주시면 반영하여 수정, 추가하겠습니다!
+                                <Mark color="black">조수미홀 사용 설명서</Mark> <Mark color="fg.muted">Manual for Josumi-Hall</Mark> <br />* 설명이 부족한 부분은 공유해드린 구글 독스 파일에 댓글로 남겨주시면 반영하여 수정, 추가하겠습니다!
                             </Text>
                         }
                     >
@@ -112,7 +137,7 @@ export default function Archive() {
                                 w={"full"}
                                 colorPalette={"blue"}
                             >
-                                open Google Docs
+                                Open Google Docs
                             </Button>
                         </Link>
                     </DataListItem>
