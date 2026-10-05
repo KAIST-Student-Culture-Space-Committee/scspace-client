@@ -8,6 +8,7 @@ import {
   Button,
   Checkbox,
   Text,
+  Alert,
 } from "@chakra-ui/react";
 import {
   SpaceForm,
@@ -33,9 +34,15 @@ import { toaster } from "@scspace-client/Components/atoms/Toaster";
 import { dateUtils } from "@scspace-client/Hooks/utils";
 import InputComponent from "@scspace-client/Components/molecules/forms/Input";
 import { IndividualOrganizationId } from "@scspace-depot/consts/organization.const";
+import { DutyUtils } from "@scspace-depot/utils/duty.utils";
+import DutyNoticeDialog from "@scspace-client/Components/organisms/Reservation/DutyNoticeDialog";
+import { useAllSpace } from "@scspace-client/Hooks/space";
+import { useMyPenalty } from "@scspace-client/Hooks/penalty";
+import { PENALTY_SPACE_TYPE_LABEL } from "@scspace-depot/consts/penalty.const";
+import { PenaltyStageEnum } from "@scspace-depot/enums/penalty.enum";
 
 export default function ReservationApplication() {
-  const { userInfo, needLogin } = useAuth();
+  const { userInfo, needLogin, isManager } = useAuth();
   needLogin();
 
   const _init = new Date();
@@ -66,14 +73,26 @@ export default function ReservationApplication() {
 
   const createReservation = useReservationAPI().createRes;
 
-  const [e, setE] = useState<string | null>(null);
-
-  const { getTime } = dateUtils();
+  const { getTime, getString } = dateUtils();
 
   const isPerformanceSpace = spaceId === 10;
   const isIndividualReservation = orgId === IndividualOrganizationId;
   const allConfirmationsChecked =
     reservationTypeConfirmed && dutyAccessConfirmed && photoUploadConfirmed;
+
+  const { spaces: allSpaces } = useAllSpace();
+  const selectedSpaceType = allSpaces?.find((s) => s.id === spaceId)?.spaceType;
+
+  const { data: my } = useMyPenalty(!!userInfo && !isManager);
+  const targetPenaltyDetail = orgId === IndividualOrganizationId
+    ? my?.user
+    : my?.organizations.find((o) => o.organization.id === orgId)?.detail;
+  const restrictedSpaceState = selectedSpaceType !== undefined
+    ? targetPenaltyDetail?.spaces.find((s) => s.spaceType === selectedSpaceType)
+    : undefined;
+  const isRestricted = !!restrictedSpaceState
+    && restrictedSpaceState.restrictionStage !== PenaltyStageEnum.NONE
+    && restrictedSpaceState.restrictionEnd > 0;
 
   function submit() {
     if (!allConfirmationsChecked) return;
@@ -144,9 +163,6 @@ export default function ReservationApplication() {
           onSuccess: () => {
             setCount(c => c + 1);
           },
-          onError: (error) => {
-            setE(error.message);
-          },
         }
       ),
       {
@@ -158,10 +174,10 @@ export default function ReservationApplication() {
           title: "Submitted Successfully!",
           description: "Enjoy Your Reservation",
         },
-        error: {
+        error: (err) => ({
           title: "Reservate Failed",
-          description: e ?? "Please resubmit"
-        }
+          description: err instanceof Error ? err.message : "Please resubmit"
+        })
       }
     );
   }
@@ -303,7 +319,7 @@ export default function ReservationApplication() {
           )}
         </Grid>
         <Separator />
-        <Stack gap={3} py={2}>
+                <Stack gap={3} py={2}>
           <Checkbox.Root
             checked={reservationTypeConfirmed}
             onCheckedChange={(e) => setReservationTypeConfirmed(!!e.checked)}
@@ -340,10 +356,20 @@ export default function ReservationApplication() {
             </Checkbox.Label>
           </Checkbox.Root>
         </Stack>
+        {isRestricted && restrictedSpaceState && (
+          <Alert.Root status="error">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>
+                {`${PENALTY_SPACE_TYPE_LABEL[restrictedSpaceState.spaceType].kr}은(는) 페널티로 ${getString(restrictedSpaceState.restrictionEnd)}까지 예약 신청이 제한되어 있습니다.`}
+              </Alert.Title>
+            </Alert.Content>
+          </Alert.Root>
+        )}
         <Button
           rounded="sm"
           width="100%"
-          disabled={!allConfirmationsChecked}
+          disabled={!allConfirmationsChecked || isRestricted}
           onClick={submit}
         >
           Submit
